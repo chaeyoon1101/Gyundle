@@ -25,12 +25,14 @@ struct CalendarTitle: View {
                 }
             }
             .font(.headline)
-            .padding(4)
             .bold()
+            .padding(4)
               
             HStack(spacing: 5) {
                 ForEach(Self.weekdaySymbols, id: \.self) { symbol in
-                    Text(symbol).frame(maxWidth: .infinity)
+                    Text(symbol)
+                        .frame(maxWidth: .infinity)
+                        .font(.subheadline)
                 }
             }
         }
