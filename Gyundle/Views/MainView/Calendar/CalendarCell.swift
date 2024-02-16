@@ -9,7 +9,7 @@ struct CalendarCell: View {
     
     var body: some View {
         VStack {
-            Image("IMG_2178")
+            Image("TestImage")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .opacity(0.7)

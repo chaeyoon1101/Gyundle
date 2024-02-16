@@ -4,25 +4,28 @@ struct CalendarView: View {
     @State private var currentDate: Date = Date()
     
     var body: some View {
-        VStack {
-            CalendarTitle(currentDate: $currentDate)
+        ScrollView {
+            VStack {
+                CalendarTitle(currentDate: $currentDate)
 
-            CalendarGrid(currentDate: $currentDate)
-                .gesture(
-                    DragGesture()
-                        .onEnded { value in
-                            let translation = value.translation.width
+                CalendarGrid(currentDate: $currentDate)
+                    .gesture(
+                        DragGesture()
+                            .onEnded { value in
+                                let translation = value.translation.width
 
-                            if translation > 50 {
-                                changeToLastMonth()
-                            } else if translation < -50 {
-                                changeToNextMonth()
-                            } else {
-                                print("Cancelled")
+                                if translation > 50 {
+                                    changeToLastMonth()
+                                } else if translation < -50 {
+                                    changeToNextMonth()
+                                } else {
+                                    print("Cancelled")
+                                }
                             }
-                        }
-                )
+                    )
+            }
         }
+        
     }
 }
 
