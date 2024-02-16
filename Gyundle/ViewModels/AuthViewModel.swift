@@ -1,12 +1,16 @@
 import Foundation
+import KakaoSDKAuth
+import KakaoSDKUser
 import FirebaseAuth
 import AuthenticationServices
 import CryptoKit
 
+
 enum AuthAction {
     case appleLogin(ASAuthorizationAppleIDRequest)
     case appleLoginCompletion(Result<ASAuthorization, Error>)
-    case emailSignUp(String, String)
+    case kakaoLogin
+    case signOut
 }
 
 class AuthViewModel: NSObject, ObservableObject {
@@ -14,6 +18,20 @@ class AuthViewModel: NSObject, ObservableObject {
     
     override init() {
         super.init()
+        addStateDidChangeListener()
+    }
+    
+    func checkLoginStatus() {
+        if Auth.auth().currentUser != nil {
+            loggedIn = true
+        } else {
+            loggedIn = false
+        }
+        
+        print("checkLoginStatus")
+    }
+    
+    private func addStateDidChangeListener() {
         Auth.auth().addStateDidChangeListener() { auth, user in
             if user != nil {
                 self.loggedIn = true
@@ -25,41 +43,60 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
     
+    var currentUser: FirebaseAuth.User? = {
+        let user = Auth.auth().currentUser
+        
+        return user
+    }()
+    
     func send(action: AuthAction) {
         switch action {
         case .appleLogin(let request):
-            nonce = randomNonceString()
-            request.requestedScopes = [.email, .fullName]
-            request.nonce = sha256(nonce)
+            handleAppleLogin(request)
             
         case .appleLoginCompletion(let result):
-            switch result {
-            case .success(let user):
-                print("success")
-                guard let credential = user.credential as? ASAuthorizationAppleIDCredential else {
-                    print("error with firebase")
-                    return
-                }
-                
-                print("email", credential.email)
-                print("fullname", credential.fullName)
-                
-                authenticate(credential: credential)
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
+            handleAppleLoginCompletion(result)
             
-        case .emailSignUp(let email, let password):
-            registerUser(email: email, password: password)
+        case .kakaoLogin:
+            print("case kakao login")
+            handleKakaoLogin()
+            
+        case .signOut:
+            signOut()
         }
     }
     
     
     
     // Apple Login
-    var nonce = ""
     
-    func authenticate(credential: ASAuthorizationAppleIDCredential) {
+    private func handleAppleLogin(_ request: ASAuthorizationAppleIDRequest) {
+        nonce = randomNonceString()
+        request.requestedScopes = [.email, .fullName]
+        request.nonce = sha256(nonce)
+    }
+    
+    private func handleAppleLoginCompletion(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .success(let user):
+            print("success")
+            guard let credential = user.credential as? ASAuthorizationAppleIDCredential else {
+                print("error with firebase")
+                return
+            }
+            
+//                print("email", credential.email)
+//                print("fullname", credential.fullName)
+            print(currentUser?.uid)
+            
+            authenticate(credential: credential)
+        case .failure(let error):
+            print(error.localizedDescription)
+        }
+    }
+    private var nonce = ""
+    
+    private func authenticate(credential: ASAuthorizationAppleIDCredential) {
         //getting token
         guard let token = credential.identityToken else {
             print("error with firebase")
@@ -82,23 +119,79 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
     
-    // Email Login
-    func registerUser(email: String, password: String) {
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            if let error = error {
-                print("Error : \(error.localizedDescription)")
-                return
+    // Kakao Login
+    
+    private func handleKakaoLogin() {
+        print("kakao login")
+        if (UserApi.isKakaoTalkLoginAvailable()) {
+            UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
+                if let error = error {
+                    print(error)
+                } else {
+                    print("loginWithKakaoTalk() success.")
+
+                    _ = oauthToken
+                    
+                    self.signInFirebase()
+                }
             }
-            
-            guard let user = result?.user else { return }
-            
-            print(user.uid)
+        } else {
+            UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
+                    if let error = error {
+                        print(error)
+                    } else {
+                        print("loginWithKakaoAccount() success.")
+
+                        _ = oauthToken
+                        
+                        self.signInFirebase()
+                    }
+                }
+        }
+    }
+    
+    private func signInFirebase() {
+        UserApi.shared.me() { user, error in
+            if let error = error {
+                print("카카오톡 사용자 정보가져오기 에러 \(error.localizedDescription)")
+            } else {
+                guard let email = user?.kakaoAccount?.email,
+                      let password = user?.id else {
+                    print("email나 password중 nil")
+                    return
+                }
+                
+                Auth.auth().signIn(withEmail: email, password: String(password)) { result, error in
+                   if let error = error {
+                       print("파이어베이스 로그인 실패: \(error.localizedDescription)")
+                       
+                       Auth.auth().createUser(withEmail: email, password: String(password)) { result, error in
+                           if let error = error {
+                               print("파이어베이스 사용자 생성 실패: \(error.localizedDescription)")
+                           } else {
+                               print("파이어베이스 사용자 생성 성공")
+                               print(result?.user.email)
+                           }
+                       }
+                   } else {
+                       print("파이어베이스 로그인 성공")
+                   }
+               }
+            }
+        }
+    }
+    
+    private func signOut() {
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            print(error.localizedDescription)
         }
     }
 }
 
 
-func sha256(_ input: String) -> String {
+private func sha256(_ input: String) -> String {
     let inputData = Data(input.utf8)
     let hashedData = SHA256.hash(data: inputData)
     let hashString = hashedData.compactMap {
@@ -108,7 +201,7 @@ func sha256(_ input: String) -> String {
     return hashString
 }
 
-func randomNonceString(length: Int = 32) -> String {
+private func randomNonceString(length: Int = 32) -> String {
     precondition(length > 0)
     let charset: [Character] =
     Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")

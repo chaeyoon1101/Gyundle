@@ -20,32 +20,38 @@ struct ContentView: View {
     }
     
     var body: some View {
-        if authViewModel.loggedIn {
-            TabView(selection: $selection) {
-                MainView()
-                    .tabItem {
-                        Image(systemName: "house")
-                        Text("홈")
-                    }.tag(Tab.homeView)
+        Group {
+            if authViewModel.loggedIn {
+                TabView(selection: $selection) {
+                    MainView()
+                        .tabItem {
+                            Image(systemName: "house")
+                            Text("홈")
+                        }.tag(Tab.homeView)
+                    AuthView()
+                        .tabItem {
+                            Image(systemName: "person.2")
+                            Text("친구")
+                        }.tag(Tab.homeView)
+                    Text("searchView")
+                        .tabItem {
+                            Image(systemName: "magnifyingglass")
+                            Text("검색")
+                        }.tag(Tab.homeView)
+                    Text("myView")
+                        .tabItem {
+                            Image(systemName: "person")
+                            Text("마이페이지")
+                        }.tag(Tab.homeView)
+                }
+            } else {
                 AuthView()
-                    .tabItem {
-                        Image(systemName: "person.2")
-                        Text("친구")
-                    }.tag(Tab.homeView)
-                Text("searchView")
-                    .tabItem {
-                        Image(systemName: "magnifyingglass")
-                        Text("검색")
-                    }.tag(Tab.homeView)
-                Text("myView")
-                    .tabItem {
-                        Image(systemName: "person")
-                        Text("마이페이지")
-                    }.tag(Tab.homeView)
             }
-        } else {
-            AuthView()
         }
+        .onAppear {
+            authViewModel.checkLoginStatus()
+        }
+        
     }
         
 }

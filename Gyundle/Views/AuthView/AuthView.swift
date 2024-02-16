@@ -16,14 +16,14 @@ struct AuthView: View {
             
             Image("kakao_login_medium_wide")
                 .frame(width: 280, height: 50)
-            Image("kakao_login_medium_narrow")
-                .frame(width: 280, height: 50)
-            Button("Login Button") {
-                authViewModel.registerUser(email: "test@gmail.com", password: "testacc1234!!")
-            }
+                .onTapGesture {
+                    authViewModel.send(action: .kakaoLogin)
+                    print("tapped Kakao login")
+                }
+        
             
             Button("Log out") {
-                try? Auth.auth().signOut()
+                authViewModel.send(action: .signOut)
                 print(Auth.auth().currentUser?.email)
             }
             .background(.foreground)
