@@ -48,7 +48,7 @@ struct AuthView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 24, height: 24)
-            Text("Apple로 계속하기")
+            Text("Apple로 시작하기")
         }
         .font(.headline)
         .foregroundStyle(Color("BG"))
@@ -63,7 +63,7 @@ struct AuthView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 24, height: 24)
-            Text("카카오로 계속하기")
+            Text("카카오로 시작하기")
                 .font(.headline)
         }
         .foregroundStyle(.black)
