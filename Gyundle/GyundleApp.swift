@@ -5,7 +5,7 @@ import KakaoSDKAuth
 
 @main
 struct GyundleApp: App {
-    @StateObject var authViewModel = AuthViewModel(userViewModel: UserViewModel())
+    @StateObject var authViewModel = AuthViewModel()
     
     let kakaoAppKey = Bundle.main.appKey(for: "KakaoNativeAppKey")
     

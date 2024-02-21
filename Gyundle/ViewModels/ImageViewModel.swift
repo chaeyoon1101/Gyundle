@@ -29,6 +29,4 @@ class ImageViewModel: ObservableObject {
             self.isUploadingImage = false
         }
     }
-    
-    
 }

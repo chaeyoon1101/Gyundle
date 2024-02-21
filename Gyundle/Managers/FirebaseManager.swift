@@ -1,24 +1,29 @@
-import SwiftUI
+import Foundation
 import Firebase
 import FirebaseFirestore
 
-class UserViewModel: ObservableObject {
-    @Published var user: User?
+class FirebaseManager {
+    static let shared = FirebaseManager()
     
-    func createUserInfo(id: String) {
+    private init() { }
+    
+    func uploadUserInfo(user: User, completion: @escaping (Error?) -> Void) {
         let db = Firestore.firestore()
-        let collectionRef = db.collection("users")
         
+        let collectionRef = db.collection("users")
         do {
-            try collectionRef.document("testId").setData(from: user) { error in
+            try collectionRef.document(user.id).setData(from: user) { error in
                 if let error = error {
                     print("User Info 업로드 실패", error.localizedDescription)
+                    completion(error)
                 } else {
                     print("업로드 성공")
+                    completion(nil)
                 }
             }
         } catch let error {
             print("\(error)")
+            completion(error)
         }
     }
     
@@ -34,4 +39,6 @@ class UserViewModel: ObservableObject {
            }
         }
     }
+    
+    
 }

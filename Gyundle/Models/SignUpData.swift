@@ -13,16 +13,4 @@ class SignUpData: ObservableObject {
     @Published var name: String = ""
     @Published var photo: String = ""
     @Published var dateOfBirth: Date = Date()
-    
-    func toUser() -> User {
-        var user = User(
-                        id: id,
-                        email: email,
-                        name: name,
-                        photo: photo,
-                        dateOfBirth: dateOfBirth
-                    )
-        
-        return user
-    }
 }

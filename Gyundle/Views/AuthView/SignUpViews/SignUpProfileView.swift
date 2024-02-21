@@ -82,9 +82,7 @@ struct SignUpProfileView: View {
                 print("Image Upload Error", error.localizedDescription)
             }
         }
-    }
-    
-    
+    } 
 }
 
 #Preview {
