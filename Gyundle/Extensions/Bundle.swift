@@ -1,10 +1,3 @@
-//
-//  Bundle.swift
-//  Gyundle
-//
-//  Created by 임채윤 on 2/16/24.
-//
-
 import Foundation
 
 extension Bundle {

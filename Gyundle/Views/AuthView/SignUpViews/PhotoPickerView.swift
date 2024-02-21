@@ -12,7 +12,7 @@ struct PhotoPickerView: View {
                 .clipShape(Circle())
                 .aspectRatio(contentMode: .fill)
                 .background {
-                    Circle().fill(.FG)
+                    Circle().fill(.fg)
                 }
         } else {
             Image(systemName: "camera.fill")
@@ -22,7 +22,7 @@ struct PhotoPickerView: View {
                 .foregroundStyle(Color.secondary)
                 .background {
                     Circle()
-                        .fill(.SC)
+                        .fill(.sc)
                         .frame(width: 150, height: 150)
                 }
         }

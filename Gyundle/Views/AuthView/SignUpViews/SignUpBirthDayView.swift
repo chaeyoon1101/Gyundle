@@ -82,7 +82,7 @@ struct SignUpBirthDayView: View {
         .frame(width: 48, height: 48)
         .background(Color.secondary)
         .opacity(0.3)
-        .foregroundStyle(.FG)
+        .foregroundStyle(.fg)
         .font(.title)
         .cornerRadius(5)
     }

@@ -1,10 +1,3 @@
-//
-//  SignUpData.swift
-//  Gyundle
-//
-//  Created by 임채윤 on 2/18/24.
-//
-
 import Foundation
 
 class SignUpData: ObservableObject {

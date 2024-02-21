@@ -1,10 +1,3 @@
-//
-//  LoadingView.swift
-//  Gyundle
-//
-//  Created by 임채윤 on 2/21/24.
-//
-
 import SwiftUI
 
 struct LoadingView: View {

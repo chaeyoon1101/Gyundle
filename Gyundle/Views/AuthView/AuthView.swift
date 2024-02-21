@@ -57,9 +57,9 @@ struct AuthView: View {
             Text("Apple로 시작하기")
         }
         .font(.headline)
-        .foregroundStyle(Color("BG"))
+        .foregroundStyle(Color.bg)
         .frame(width: 280, height: 46)
-        .background(Color("FG"))
+        .background(Color.fg)
         .cornerRadius(12)
     }()
     

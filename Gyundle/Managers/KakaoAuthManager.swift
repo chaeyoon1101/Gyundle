@@ -1,10 +1,3 @@
-//
-//  KakaoAuthManager.swift
-//  Gyundle
-//
-//  Created by 임채윤 on 2/21/24.
-//
-
 import Foundation
 import KakaoSDKAuth
 import KakaoSDKUser
