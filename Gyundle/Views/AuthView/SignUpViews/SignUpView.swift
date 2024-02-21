@@ -32,6 +32,7 @@ struct SignUpView: View {
                 .scrollDisabled(true)
                 
                 .onChange(of: pageId) { newValue in
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     withAnimation {
                         scrollViewProxy.scrollTo(pageId, anchor: .center)
                     }

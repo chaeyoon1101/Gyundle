@@ -32,6 +32,7 @@ struct SignUpProfileView: View {
                         }
                         .onChange(of: selectedItem) { newItem in
                             Task {
+                                imageViewModel.isUploadingImage = true
                                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
                                     selectedImageData = data
                                     
