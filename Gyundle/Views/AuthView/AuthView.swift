@@ -6,7 +6,14 @@ struct AuthView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
     var body: some View {
-        VStack {
+        VStack(spacing: 12) {
+            Text("견들")
+                .font(.largeTitle)
+                .bold()
+                .padding(.top, 48)
+            
+            Spacer()
+            
             appleLoginButton
                 .overlay {
                     SignInWithAppleButton { request in
@@ -26,7 +33,6 @@ struct AuthView: View {
             
             Button("Log out") {
                 authViewModel.send(action: .signOut)
-                print(Auth.auth().currentUser?.email)
             }
             .frame(width: 280, height: 60)
             

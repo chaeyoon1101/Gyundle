@@ -4,7 +4,7 @@ import KakaoSDKUser
 import FirebaseAuth
 import AuthenticationServices
 import CryptoKit
-
+import Firebase
 
 enum AuthAction {
     case appleLogin(ASAuthorizationAppleIDRequest)
@@ -13,41 +13,74 @@ enum AuthAction {
     case signOut
 }
 
+enum AuthStatus {
+    case loggedIn
+    case loggedOut
+    case signUp
+}
+
 class AuthViewModel: NSObject, ObservableObject {
-    @Published var loggedIn: Bool = false
+    @Published var userViewModel: UserViewModel
     
-    override init() {
+    @Published var status: AuthStatus = .loggedOut
+    
+    @Published var currentUser: FirebaseAuth.User?
+    
+    init(userViewModel: UserViewModel) {
+        self.userViewModel = userViewModel
         super.init()
-        addStateDidChangeListener()
+        self.addStateDidChangeListener()
     }
     
-    func checkLoginStatus() {
-        if Auth.auth().currentUser != nil {
-            loggedIn = true
+    func checkStatus() {
+        currentUser = Auth.auth().currentUser
+        
+        if currentUser != nil {
+            status = .loggedIn
+            userViewModel.hasUserInfo(id: currentUser!.uid) { hasUserInfo in
+                self.status = hasUserInfo ? .loggedIn : .signUp
+            }
         } else {
-            loggedIn = false
+            status = .loggedOut
         }
         
-        print("checkLoginStatus")
+        print("auth status: ", status)
     }
     
     private func addStateDidChangeListener() {
         Auth.auth().addStateDidChangeListener() { auth, user in
-            if user != nil {
-                self.loggedIn = true
-                print("Auth state changed, is signed in")
-            } else {
-                self.loggedIn = false
-                print("Auth state changed, is signed out")
-            }
+            self.checkStatus()
         }
     }
     
-    var currentUser: FirebaseAuth.User? = {
-        let user = Auth.auth().currentUser
+    func uploadUserInfo(userData: SignUpData) {
+        let db = Firestore.firestore()
+        guard let currentUser = currentUser else {
+            print("can't upload user info currnetUser is nil")
+            return
+        }
+        let user = User(
+            id: currentUser.uid,
+            email: currentUser.email ?? currentUser.uid,
+            name: userData.name,
+            photo: userData.photo,
+            dateOfBirth: userData.dateOfBirth
+        )
         
-        return user
-    }()
+        let collectionRef = db.collection("users")
+        do {
+            try collectionRef.document(currentUser.uid).setData(from: user) { error in
+                if let error = error {
+                    print("User Info 업로드 실패", error.localizedDescription)
+                } else {
+                    self.checkStatus()
+                    print("업로드 성공")
+                }
+            }
+        } catch let error {
+            print("\(error)")
+        }
+    }
     
     func send(action: AuthAction) {
         switch action {
@@ -60,16 +93,13 @@ class AuthViewModel: NSObject, ObservableObject {
         case .kakaoLogin:
             print("case kakao login")
             handleKakaoLogin()
-            
+        
         case .signOut:
             signOut()
         }
     }
     
-    
-    
     // Apple Login
-    
     private func handleAppleLogin(_ request: ASAuthorizationAppleIDRequest) {
         nonce = randomNonceString()
         request.requestedScopes = [.email, .fullName]
@@ -84,11 +114,7 @@ class AuthViewModel: NSObject, ObservableObject {
                 print("error with firebase")
                 return
             }
-            
-//                print("email", credential.email)
-//                print("fullname", credential.fullName)
-            print(currentUser?.uid)
-            
+
             authenticate(credential: credential)
         case .failure(let error):
             print(error.localizedDescription)
@@ -114,6 +140,8 @@ class AuthViewModel: NSObject, ObservableObject {
                 print(err.localizedDescription)
                 return
             }
+            
+            self.checkStatus()
             
             print("로그인 완료")
         }
@@ -162,20 +190,24 @@ class AuthViewModel: NSObject, ObservableObject {
                 }
                 
                 Auth.auth().signIn(withEmail: email, password: String(password)) { result, error in
-                   if let error = error {
-                       print("파이어베이스 로그인 실패: \(error.localizedDescription)")
-                       
-                       Auth.auth().createUser(withEmail: email, password: String(password)) { result, error in
-                           if let error = error {
-                               print("파이어베이스 사용자 생성 실패: \(error.localizedDescription)")
-                           } else {
-                               print("파이어베이스 사용자 생성 성공")
-                               print(result?.user.email)
-                           }
-                       }
-                   } else {
-                       print("파이어베이스 로그인 성공")
-                   }
+                    let isNewUser = result?.additionalUserInfo == nil
+                
+                    if isNewUser {
+                        Auth.auth().createUser(withEmail: email, password: String(password)) { result, error in
+                            if let error = error {
+                                print("파이어베이스 사용자 생성 실패: \(error.localizedDescription)")
+                            } else {
+                                print("파이어베이스 사용자 생성 성공")
+                            }
+                        }
+                    } else {
+                        if let error = error {
+                           print("파이어베이스 로그인 실패: \(error.localizedDescription)")
+                        } else {
+                           print("파이어베이스 로그인 성공")
+                        }
+                    }
+                    self.checkStatus()
                }
             }
         }
@@ -189,7 +221,6 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
 }
-
 
 private func sha256(_ input: String) -> String {
     let inputData = Data(input.utf8)
