@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct CalendarGrid: View {
-    private let calendar: Calendar = Calendar.current
-    @Binding var currentDate: Date
+    @EnvironmentObject private var calendarViewModel: CalendarViewModel
 
     var body: some View {
         
@@ -15,7 +14,7 @@ struct CalendarGrid: View {
                                 let size = geometry.size.width / 7 - 4
                                 if isCurrentMonth(week: week, day: day) {
                                     VStack {
-                                        CalendarCell(currentDate: $currentDate, week: week, day: day)
+                                        CalendarCell(week: week, day: day)
                                             .frame(width: size, height: size)
                                             .cornerRadius(size / 3)
                                     }
@@ -36,19 +35,10 @@ struct CalendarGrid: View {
 }
 
 extension CalendarGrid {
-    private func dayText(week: Int, day: Int) -> String {
-        let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate)) ?? Date()
-        let startDate = calendar.date(byAdding: .day, value: -(calendar.component(.weekday, from: firstDayOfMonth) - 1), to: firstDayOfMonth) ?? Date()
-
-        let date = calendar.date(byAdding: .day, value: (week * 7) + (day - calendar.component(.weekday, from: startDate)), to: startDate) ?? Date()
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-
-        return formatter.string(from: date)
-    }
-    
     private func isCurrentMonth(week: Int, day: Int) -> Bool {
+        let calendar = Calendar.current
+        let currentDate = calendarViewModel.currentDate
+        
         let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate)) ?? Date()
         let startDate = calendar.date(byAdding: .day, value: -(calendar.component(.weekday, from: firstDayOfMonth) - 1), to: firstDayOfMonth) ?? Date()
 
@@ -59,5 +49,5 @@ extension CalendarGrid {
 }
 
 #Preview {
-    CalendarGrid(currentDate: .constant(Date()))
+    CalendarGrid()
 }

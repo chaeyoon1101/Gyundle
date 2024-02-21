@@ -1,24 +1,24 @@
 import SwiftUI
 
 struct CalendarTitle: View {
-    @Binding var currentDate: Date
+    @EnvironmentObject private var calendarViewModel: CalendarViewModel
     
     var body: some View {
         VStack {
             HStack(spacing: 18) {
-                Text(currentDate, formatter: Self.dateFormatter)
+                Text(calendarViewModel.currentDate, formatter: Self.dateFormatter)
                     .animation(nil)
                 
                 Spacer()
                 
                 Button {
-                    changeToLastMonth()
+                    calendarViewModel.changeToLastMonth()
                 } label: {
                     Image(systemName: "chevron.left")
                         .foregroundStyle(.foreground)
                 }
                 Button {
-                    changeToNextMonth()
+                    calendarViewModel.changeToNextMonth()
                 } label: {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.foreground)
@@ -53,26 +53,8 @@ extension CalendarTitle {
 
         return weekdaySymbols
     }()
-    
-    private func changeMonth(by value: Int) {
-        let calendar = Calendar.current
-        
-        if let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) {
-            withAnimation {
-                self.currentDate = newDate
-            }
-        }
-    }
-    
-    private func changeToLastMonth() {
-        changeMonth(by: -1)
-    }
-    
-    private func changeToNextMonth() {
-        changeMonth(by: 1)
-    }
 }
 
 #Preview {
-    CalendarTitle(currentDate: .constant(Date()))
+    CalendarTitle()
 }

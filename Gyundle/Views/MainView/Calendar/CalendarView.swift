@@ -2,22 +2,23 @@ import SwiftUI
 
 struct CalendarView: View {
     @State private var currentDate: Date = Date()
+    @EnvironmentObject private var calendarViewModel: CalendarViewModel
     
     var body: some View {
         ScrollView {
             VStack {
-                CalendarTitle(currentDate: $currentDate)
+                CalendarTitle()
 
-                CalendarGrid(currentDate: $currentDate)
+                CalendarGrid()
                     .gesture(
                         DragGesture()
                             .onEnded { value in
                                 let translation = value.translation.width
 
                                 if translation > 50 {
-                                    changeToLastMonth()
+                                    calendarViewModel.changeToLastMonth()
                                 } else if translation < -50 {
-                                    changeToNextMonth()
+                                    calendarViewModel.changeToNextMonth()
                                 } else {
                                     print("Cancelled")
                                 }
@@ -26,26 +27,6 @@ struct CalendarView: View {
             }
         }
         
-    }
-}
-
-extension CalendarView {
-    private func changeMonth(by value: Int) {
-        let calendar = Calendar.current
-        
-        if let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) {
-            withAnimation {
-                self.currentDate = newDate
-            }
-        }
-    }
-    
-    private func changeToLastMonth() {
-        changeMonth(by: -1)
-    }
-    
-    private func changeToNextMonth() {
-        changeMonth(by: 1)
     }
 }
 #Preview {

@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct CalendarCell: View {
-    private let calendar = Calendar.current
-    @Binding var currentDate: Date
+    @EnvironmentObject private var calendarViewModel: CalendarViewModel
     
     let week: Int
     let day: Int
@@ -26,6 +25,9 @@ struct CalendarCell: View {
 
 extension CalendarCell {
     private func dayText(week: Int, day: Int) -> String {
+        let calendar = Calendar.current
+        let currentDate = calendarViewModel.currentDate
+        
         let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate)) ?? Date()
         let startDate = calendar.date(byAdding: .day, value: -(calendar.component(.weekday, from: firstDayOfMonth) - 1), to: firstDayOfMonth) ?? Date()
 
@@ -38,5 +40,5 @@ extension CalendarCell {
     }
 }
 #Preview {
-    CalendarCell(currentDate: .constant(Date()), week: 1, day: 1)
+    CalendarCell(week: 1, day: 1)
 }
