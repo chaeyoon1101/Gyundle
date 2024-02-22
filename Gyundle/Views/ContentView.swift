@@ -47,17 +47,17 @@ struct ContentView: View {
                 .tabItem {
                     Image(systemName: "person.2")
                     Text("친구")
-                }.tag(Tab.homeView)
+                }.tag(Tab.friendView)
             SignUpView()
                 .tabItem {
                     Image(systemName: "magnifyingglass")
                     Text("검색")
-                }.tag(Tab.homeView)
+                }.tag(Tab.searchView)
             MyPageView()
                 .tabItem {
                     Image(systemName: "person")
                     Text("마이페이지")
-                }.tag(Tab.homeView)
+                }.tag(Tab.myView)
         }.foregroundStyle(.fg)
     }
         
