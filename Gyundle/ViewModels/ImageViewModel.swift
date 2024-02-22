@@ -3,15 +3,15 @@ import FirebaseStorage
 import Kingfisher
 
 class ImageViewModel: ObservableObject {
-    @Published var isUploadingImage: Bool = false
+    @Published var isUploading: Bool = false
     
     func uploadImage(_ image: UIImage, completion: @escaping (Result<URL, Error>) -> Void) {
         guard let imageData = image.jpegData(compressionQuality: 0.5) else {
             return
         }
         
-        isUploadingImage = true
-        print(isUploadingImage)
+        isUploading = true
+        print(isUploading)
         let storage = Storage.storage()
         let storageRef = storage.reference().child("profile_images/\(UUID().uuidString).jpg")
         
@@ -27,7 +27,7 @@ class ImageViewModel: ObservableObject {
                     }
                 }
             }
-            self.isUploadingImage = false
+            self.isUploading = false
         }
     }
 }

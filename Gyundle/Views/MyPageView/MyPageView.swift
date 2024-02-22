@@ -6,30 +6,37 @@ struct MyPageView: View {
     @ObservedObject var userData = UserInfoData()
     
     var body: some View {
-        VStack {
-            if let user = userViewModel.user {
-                VStack {
-                    Text(user.name)
-                    Text(user.email)
-                    PhotoPickerView(
-                        imageViewModel: imageViewModel,
-                        uploadData: userData,
-                        selectedImageURL: $userData.photo
-                    )
-                }
-                .onAppear {
-                    updateUserData(user: user)
-                }
-                
-                .onChange(of: userData) { newUserData in
-                    userViewModel.uploadUserInfo(userData: newUserData)
-                }
-            } else {
-                VStack {
-                    Text("11")
+        ZStack {
+            if imageViewModel.isUploading {
+                LoadingView()
+            }
+            
+            VStack {
+                if let user = userViewModel.user {
+                    VStack {
+                        Text(user.name)
+                        Text(user.email)
+                        PhotoPickerView(
+                            imageViewModel: imageViewModel,
+                            uploadData: userData,
+                            selectedImageURL: $userData.photo
+                        )
+                    }
+                    .onAppear {
+                        updateUserData(user: user)
+                    }
+                    
+                    .onChange(of: userData) { newUserData in
+                        userViewModel.uploadUserInfo(userData: newUserData)
+                    }
+                } else {
+                    VStack {
+                        Text("11")
+                    }
                 }
             }
         }
+        .disabled(imageViewModel.isUploading)
     }
     
     private func updateUserData(user: User) {

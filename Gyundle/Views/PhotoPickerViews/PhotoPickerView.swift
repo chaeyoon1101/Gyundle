@@ -17,7 +17,7 @@ struct PhotoPickerView: View {
         }
         .onChange(of: selectedItem) { newItem in
             Task {
-                imageViewModel.isUploadingImage = true
+                imageViewModel.isUploading = true
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
                     selectedImageData = data
                     if let selectedImageData,

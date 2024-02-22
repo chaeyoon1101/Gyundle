@@ -10,7 +10,7 @@ struct SignUpProfileView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                if imageViewModel.isUploadingImage {
+                if imageViewModel.isUploading {
                     LoadingView()
                 }
                 
@@ -35,7 +35,7 @@ struct SignUpProfileView: View {
                 }
             }
         }
-        .disabled(imageViewModel.isUploadingImage)
+        .disabled(imageViewModel.isUploading)
     }
 
     var backButton: some View {
