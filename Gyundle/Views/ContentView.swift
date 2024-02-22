@@ -58,7 +58,8 @@ struct ContentView: View {
                     Image(systemName: "person")
                     Text("마이페이지")
                 }.tag(Tab.myView)
-        }.foregroundStyle(.fg)
+        }
+        .accentColor(.fg)
     }
         
 }
