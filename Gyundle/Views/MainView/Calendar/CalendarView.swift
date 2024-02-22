@@ -17,7 +17,7 @@ struct CalendarView: View {
 
                                 if translation > 50 {
                                     calendarViewModel.changeToLastMonth()
-                                } else if translation < -50 {
+                                } else if translation < (-50) {
                                     calendarViewModel.changeToNextMonth()
                                 } else {
                                     print("Cancelled")
@@ -26,7 +26,6 @@ struct CalendarView: View {
                     )
             }
         }
-        
     }
 }
 #Preview {

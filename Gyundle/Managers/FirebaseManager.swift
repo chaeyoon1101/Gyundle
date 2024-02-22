@@ -27,6 +27,36 @@ class FirebaseManager {
         }
     }
     
+    func fetchUserData(id: String, completion: @escaping (Result<User, Error>) -> Void) {
+        let db = Firestore.firestore()
+        
+        let collectionRef = db.collection("users")
+        
+        collectionRef.document(id).getDocument { document, error in
+            if let error = error {
+                print("fetchUserData error: ", error)
+                completion(.failure(error))
+                return
+            }
+            
+            if let document = document, document.exists {
+                do {
+                    let data = try document.data(as: User.self)
+                    
+                    print("\(id) document fetch 성공")
+                    completion(.success(data))
+                } catch {
+                    print("decode Error", error)
+                    completion(.failure(error))
+                }
+            } else {
+                print("\(id), document가 없음", error)
+                completion(.failure(error!))
+            }
+        }
+        
+    }
+    
     func hasUserInfo(id: String, completion: @escaping(Bool) -> Void) {
         let db = Firestore.firestore()
         let docRef = db.collection("users").document(id)

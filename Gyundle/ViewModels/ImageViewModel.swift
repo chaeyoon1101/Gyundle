@@ -1,5 +1,6 @@
 import SwiftUI
 import FirebaseStorage
+import Kingfisher
 
 class ImageViewModel: ObservableObject {
     @Published var isUploadingImage: Bool = false
@@ -28,5 +29,9 @@ class ImageViewModel: ObservableObject {
             }
             self.isUploadingImage = false
         }
+    }
+    
+    func fetchImage() {
+        
     }
 }

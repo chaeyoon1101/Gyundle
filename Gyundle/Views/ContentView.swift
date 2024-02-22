@@ -1,8 +1,10 @@
 import SwiftUI
 import FirebaseAuth
+import Firebase
 
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var userViewModel: UserViewModel
     
     @State private var selection: Tab = .homeView
     
@@ -22,6 +24,11 @@ struct ContentView: View {
                 AuthView()
             case .signUp:
                 SignUpView()
+            }
+        }
+        .onChange(of: authViewModel.status) { newStatus in
+            if let currentUser = authViewModel.currentUser, newStatus == .loggedIn {
+                userViewModel.fetchUserData(id: currentUser.uid)
             }
         }
         .onAppear {
@@ -46,7 +53,7 @@ struct ContentView: View {
                     Image(systemName: "magnifyingglass")
                     Text("검색")
                 }.tag(Tab.homeView)
-            Text("myView")
+            MyPageView()
                 .tabItem {
                     Image(systemName: "person")
                     Text("마이페이지")
@@ -59,4 +66,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(AuthViewModel())
+        .environmentObject(UserViewModel())
 }
