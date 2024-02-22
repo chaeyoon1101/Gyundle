@@ -1,5 +1,4 @@
 import SwiftUI
-import Kingfisher
 
 struct MyPageView: View {
     @EnvironmentObject var userViewModel: UserViewModel

@@ -1,5 +1,4 @@
 import SwiftUI
-import PhotosUI
 
 struct SignUpProfileView: View {
     @ObservedObject var signUpData: UserInfoData
@@ -7,10 +6,6 @@ struct SignUpProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
     @Binding var pageId: SignUpViewPageId
-    
-    @State private var selectedItem: PhotosPickerItem?
-    @State private var selectedImageData: Data?
-    @State private var selectedImage: UIImage?
     
     var body: some View {
         GeometryReader { geometry in
