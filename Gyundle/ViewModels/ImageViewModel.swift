@@ -30,8 +30,4 @@ class ImageViewModel: ObservableObject {
             self.isUploadingImage = false
         }
     }
-    
-    func fetchImage() {
-        
-    }
 }
