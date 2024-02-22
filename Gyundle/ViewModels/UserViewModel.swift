@@ -15,4 +15,20 @@ class UserViewModel: ObservableObject {
             }
         }
     }
+    
+    func uploadUserInfo(userData: UserInfoData) {
+        let user = User(
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            photo: userData.photo,
+            dateOfBirth: userData.dateOfBirth
+        )
+        
+        FirebaseManager.shared.uploadUserInfo(user: user) { error in
+            if let error = error {
+                print("error", error)
+            }
+        }
+    }
 }

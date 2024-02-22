@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SignUpBirthDayView: View {
-    @ObservedObject var signUpData: SignUpData
+    @ObservedObject var signUpData: UserInfoData
     
     @Binding var pageId: SignUpViewPageId
     
@@ -89,5 +89,5 @@ struct SignUpBirthDayView: View {
 }
 
 #Preview {
-    SignUpBirthDayView(signUpData: SignUpData(), pageId: .constant(.birthdayView))
+    SignUpBirthDayView(signUpData: UserInfoData(), pageId: .constant(.birthdayView))
 }

@@ -50,7 +50,7 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
     
-    func uploadUserInfo(userData: SignUpData) {
+    func uploadUserInfo(userData: UserInfoData) {
         guard let currentUser = currentUser else {
             print("can't upload user info currnetUser is nil")
             return

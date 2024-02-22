@@ -13,7 +13,7 @@ struct CustomButtonStyle: ButtonStyle {
 }
 
 struct SignUpNameView: View {
-    @ObservedObject var signUpData: SignUpData
+    @ObservedObject var signUpData: UserInfoData
     
     @Binding var pageId: SignUpViewPageId
     
@@ -70,5 +70,5 @@ struct SignUpNameView: View {
 }
 
 #Preview {
-    SignUpNameView(signUpData: SignUpData(), pageId: .constant(.nameView))
+    SignUpNameView(signUpData: UserInfoData(), pageId: .constant(.nameView))
 }

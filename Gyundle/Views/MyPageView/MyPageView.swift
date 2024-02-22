@@ -3,6 +3,8 @@ import Kingfisher
 
 struct MyPageView: View {
     @EnvironmentObject var userViewModel: UserViewModel
+    @StateObject var imageViewModel = ImageViewModel()
+    @ObservedObject var userData = UserInfoData()
     
     var body: some View {
         VStack {
@@ -10,10 +12,18 @@ struct MyPageView: View {
                 VStack {
                     Text(user.name)
                     Text(user.email)
-                    KFImage(URL(string: user.photo))
-                        .resizable()
-                        .frame(width: 150, height: 150)
-                        .aspectRatio(contentMode: .fill)
+                    PhotoPickerView(
+                        imageViewModel: imageViewModel,
+                        uploadData: userData,
+                        selectedImageURL: $userData.photo
+                    )
+                }
+                .onAppear {
+                    updateUserData(user: user)
+                }
+                
+                .onChange(of: userData) { newUserData in
+                    userViewModel.uploadUserInfo(userData: newUserData)
                 }
             } else {
                 VStack {
@@ -21,8 +31,14 @@ struct MyPageView: View {
                 }
             }
         }
-        
-        
+    }
+    
+    private func updateUserData(user: User) {
+        userData.id = user.id
+        userData.email = user.email
+        userData.name = user.name
+        userData.photo = user.photo
+        userData.dateOfBirth = user.dateOfBirth
     }
         
 }

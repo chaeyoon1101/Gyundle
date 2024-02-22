@@ -50,8 +50,10 @@ class FirebaseManager {
                     completion(.failure(error))
                 }
             } else {
-                print("\(id), document가 없음", error)
-                completion(.failure(error!))
+                if let error = error {
+                    print("\(id), document가 없음", error)
+                    completion(.failure(error))
+                }     
             }
         }
         
@@ -63,6 +65,7 @@ class FirebaseManager {
 
         docRef.getDocument { (document, error) in
            if let document = document, document.exists {
+               print("user info: ", document.exists, document.description)
                completion(true)
            } else {
                completion(false)

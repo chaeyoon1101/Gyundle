@@ -27,7 +27,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: authViewModel.status) { newStatus in
-            if let currentUser = authViewModel.currentUser, newStatus == .loggedIn {
+            if newStatus == .loggedIn, let currentUser = authViewModel.currentUser {
                 userViewModel.fetchUserData(id: currentUser.uid)
             }
         }
@@ -58,7 +58,7 @@ struct ContentView: View {
                     Image(systemName: "person")
                     Text("마이페이지")
                 }.tag(Tab.homeView)
-        }
+        }.foregroundStyle(.fg)
     }
         
 }

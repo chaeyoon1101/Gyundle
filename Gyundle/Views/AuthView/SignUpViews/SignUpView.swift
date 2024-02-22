@@ -7,7 +7,7 @@ enum SignUpViewPageId {
 }
 
 struct SignUpView: View {
-    @StateObject private var signUpData = SignUpData()
+    @StateObject private var signUpData = UserInfoData()
     @State var pageId: SignUpViewPageId = .nameView
     
     var body: some View {
