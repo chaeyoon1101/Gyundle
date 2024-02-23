@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @State private var currentDate: Date = Date()
     @EnvironmentObject private var calendarViewModel: CalendarViewModel
     
     var body: some View {
@@ -25,6 +24,9 @@ struct CalendarView: View {
                             }
                     )
             }
+        }
+        .onChange(of: calendarViewModel.currentDate) { newValue in
+            print(newValue)
         }
     }
 }
