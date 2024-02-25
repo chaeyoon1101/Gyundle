@@ -4,10 +4,21 @@ struct MainView: View {
     @EnvironmentObject private var userViewModel: UserViewModel
     
     @StateObject private var calendarViewModel: CalendarViewModel = CalendarViewModel()
+//    @StateObject private var mapViewModel: MapViewModel = MapViewModel()
     
     var body: some View {
-        CalendarView()
-            .environmentObject(calendarViewModel)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack {
+                CalendarView()
+                    .environmentObject(calendarViewModel)
+                
+                MapView()
+                    .frame(width: 400, height: 400)
+            }
+        }
+        
+        
+
     }
 }
 

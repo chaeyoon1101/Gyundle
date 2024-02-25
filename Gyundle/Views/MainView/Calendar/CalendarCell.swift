@@ -2,8 +2,6 @@ import SwiftUI
 
 struct CalendarCell: View {
     @EnvironmentObject private var calendarViewModel: CalendarViewModel
-//    @State var isToday: Bool
-//    @State var isSelectedDay: Bool
     
     let day: Int
     let size: CGFloat
