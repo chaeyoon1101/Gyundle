@@ -26,6 +26,9 @@ struct PhotoPickerUIView: View {
             .background {
                 Circle().fill(.fg)
             }
+            .onAppear {
+                print("PhotoPickerUIView imageURL: ", imageURL)
+            }
     }
 }
 

@@ -11,7 +11,7 @@ class ImageViewModel: ObservableObject {
         }
         
         isUploading = true
-        print(isUploading)
+        
         let storage = Storage.storage()
         let storageRef = storage.reference().child("profile_images/\(UUID().uuidString).jpg")
         

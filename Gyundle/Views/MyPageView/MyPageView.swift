@@ -7,10 +7,6 @@ struct MyPageView: View {
     
     var body: some View {
         ZStack {
-            if imageViewModel.isUploading {
-                LoadingView()
-            }
-            
             VStack {
                 if let user = userViewModel.user {
                     VStack {
@@ -19,21 +15,20 @@ struct MyPageView: View {
                         PhotoPickerView(
                             imageViewModel: imageViewModel,
                             uploadData: userData,
-                            selectedImageURL: $userData.photo
+                            selectedImageURL: user.photo
                         )
                     }
                     .onAppear {
                         updateUserData(user: user)
-                    }
-                    
-                    .onChange(of: userData) { newUserData in
-                        userViewModel.uploadUserInfo(userData: newUserData)
                     }
                 } else {
                     VStack {
                         Text("11")
                     }
                 }
+            }
+            if imageViewModel.isUploading {
+                LoadingView()
             }
         }
         .disabled(imageViewModel.isUploading)

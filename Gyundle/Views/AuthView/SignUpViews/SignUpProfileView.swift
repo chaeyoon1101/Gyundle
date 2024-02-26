@@ -21,7 +21,7 @@ struct SignUpProfileView: View {
                     VStack(spacing: 24) {
                         Text("\(signUpData.name)의 예쁜 사진을 등록해주세요!")
                         
-                        PhotoPickerView(imageViewModel: imageViewModel, uploadData: signUpData, selectedImageURL: $signUpData.photo)
+                        PhotoPickerView(imageViewModel: imageViewModel, uploadData: signUpData, selectedImageURL: signUpData.photo)
                     }
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 4)
                     

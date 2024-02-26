@@ -6,9 +6,11 @@ struct PhotoPickerView: View {
     @ObservedObject var imageViewModel: ImageViewModel
     @ObservedObject var uploadData: UserInfoData
     
+    @EnvironmentObject var userViewModel: UserViewModel
+    
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
-    @Binding var selectedImageURL: String
+    @State var selectedImageURL: String
     
     var body: some View {
         PhotosPicker(selection: $selectedItem, matching: .images) {
@@ -37,6 +39,8 @@ struct PhotoPickerView: View {
                 
                 selectedImageURL = url
                 uploadData.photo = url
+                
+                userViewModel.uploadUserInfo(userData: uploadData)
             case .failure(let error):
                 print("Image Upload Error", error.localizedDescription)
             }
@@ -45,5 +49,5 @@ struct PhotoPickerView: View {
 }
 
 #Preview {
-    PhotoPickerView(imageViewModel: ImageViewModel(), uploadData: UserInfoData(), selectedImageURL: .constant(""))
+    PhotoPickerView(imageViewModel: ImageViewModel(), uploadData: UserInfoData(), selectedImageURL: "")
 }

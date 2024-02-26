@@ -9,9 +9,8 @@ class UserViewModel: ObservableObject {
             case .success(let user):
                 self.user = user
                 print("UserViewModel.fetchUserData fetch userData 성공")
-                print(user)
             case .failure(let error):
-                print("UserViewModel.fetchUserData Error:",error.localizedDescription)
+                print("UserViewModel.fetchUserData Error:", error.localizedDescription)
             }
         }
     }
@@ -26,9 +25,13 @@ class UserViewModel: ObservableObject {
         )
         
         FirebaseManager.shared.uploadUserInfo(user: user) { error in
+            print("Uploading User info")
             if let error = error {
                 print("error", error)
+                return
             }
+            
+            self.fetchUserData(id: user.id)
         }
     }
 }

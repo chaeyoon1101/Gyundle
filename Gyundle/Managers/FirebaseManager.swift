@@ -11,8 +11,10 @@ class FirebaseManager {
         let db = Firestore.firestore()
         
         let collectionRef = db.collection("users")
+        let documentRef = user.id
+        
         do {
-            try collectionRef.document(user.id).setData(from: user) { error in
+            try collectionRef.document(documentRef).setData(from: user) { error in
                 if let error = error {
                     print("User Info 업로드 실패", error.localizedDescription)
                     completion(error)

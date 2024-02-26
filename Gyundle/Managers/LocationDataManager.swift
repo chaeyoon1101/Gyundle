@@ -48,14 +48,13 @@ class LocationDataManager: NSObject, ObservableObject, CLLocationManagerDelegate
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.last {
-            let lat = location.coordinate.latitude
-            let lon = location.coordinate.longitude
+        if let recentlyLocation = locations.last {
+            let lat = recentlyLocation.coordinate.latitude
+            let lon = recentlyLocation.coordinate.longitude
             
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             
             coordinates.append(coordinate)
-            print(coordinates)
         }
     }
 
