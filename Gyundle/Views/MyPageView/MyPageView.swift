@@ -21,6 +21,9 @@ struct MyPageView: View {
                     .onAppear {
                         updateUserData(user: user)
                     }
+                    .onChange(of: user) { _, _ in
+                        updateUserData(user: user)
+                    }
                 } else {
                     VStack {
                         Text("11")

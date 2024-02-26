@@ -16,6 +16,10 @@ class UserViewModel: ObservableObject {
     }
     
     func uploadUserInfo(userData: UserInfoData) {
+        if userData.id == "" {
+            return
+        }
+        
         let user = User(
             id: userData.id,
             email: userData.email,
