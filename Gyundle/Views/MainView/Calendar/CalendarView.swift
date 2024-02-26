@@ -22,7 +22,9 @@ struct CalendarView: View {
                             }
                         }
                 )
-        } 
+            
+            Text(calendarViewModel.selectedDate.toString())
+        }
         .onChange(of: calendarViewModel.currentDate) { newValue in
             print(newValue)
         }

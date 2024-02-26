@@ -5,10 +5,8 @@ struct DogWalkingView: View {
     
     var body: some View {
         VStack {
-            Text(calendarViewModel.selectedDate.description)
             MapView()
         }
-        
     }
 }
 
