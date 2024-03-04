@@ -79,6 +79,8 @@ struct DailyMemorizeView: View {
         if selectedItems.isEmpty {
             let memory = DailyMemory(id: id, date: date, text: text, photos: photos)
             memoryViewModel.uploadDailyMemory(memory: memory)
+            
+            isPresented = false
         } else {
             for item in selectedItems {
                 if let data = try? await item.loadTransferable(type: Data.self) {
