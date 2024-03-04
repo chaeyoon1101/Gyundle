@@ -30,4 +30,13 @@ class ImageViewModel: ObservableObject {
             self.isUploading = false
         }
     }
+    
+//    func uploadImage(_ image: Image) {
+//        guard let uiImage = image as UIImage else {
+//            
+//        }
+//        guard let imageData = image.jpegData(compressionQuality: 0.5) else {
+//            return
+//        }
+//    }
 }

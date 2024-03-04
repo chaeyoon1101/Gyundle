@@ -1,11 +1,38 @@
 import Foundation
 import Firebase
 import FirebaseFirestore
+import FirebaseAuth
 
 class FirebaseManager {
     static let shared = FirebaseManager()
     
     private init() { }
+    
+    func uploadDailyMemory(memory: DailyMemory, completion: @escaping (Error?) -> Void) {
+        let db = Firestore.firestore()
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("로그인 된 유저 정보가 없음")
+            return
+        }
+            
+        let date = memory.date
+        let userRef = db.collection("users").document(userID)
+        
+        do {
+            try userRef.collection("memories").document(date.toMonth()).collection(date.toDay()).document("dailyMemories").setData(from: memory) { error in
+                if let error = error {
+                    print("daily memory 업로드 실패", error.localizedDescription)
+                    completion(error)
+                } else {
+                    print("daily memory 업로드 성공")
+                    completion(nil)
+                }
+            }
+        } catch let error {
+            print("\(error)")
+            completion(error)
+        }
+    }
     
     func uploadUserInfo(user: User, completion: @escaping (Error?) -> Void) {
         let db = Firestore.firestore()
@@ -74,6 +101,8 @@ class FirebaseManager {
            }
         }
     }
+    
+    
     
     
 }

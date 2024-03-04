@@ -1,16 +1,6 @@
 import SwiftUI
 
-struct CustomButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .frame(minWidth: 0, maxWidth: .infinity)
-            .padding()
-            .opacity(configuration.isPressed ? 0.8 : 1)
-            .background(Color(red: 222 / 255, green: 184 / 255, blue: 135 / 255))
-            .foregroundColor(.black)
-            .cornerRadius(20.0)
-    }
-}
+
 
 struct SignUpNameView: View {
     @ObservedObject var signUpData: UserInfoData
@@ -47,7 +37,7 @@ struct SignUpNameView: View {
                     .disabled(!isVaildName)
                     .opacity(!isVaildName ? 0.5 : 1)
                     .frame(width: geometry.size.width * 0.9)
-                    .buttonStyle(CustomButtonStyle())
+                    .buttonStyle(SignUpViewButtonStyle())
                 }
             }
         }

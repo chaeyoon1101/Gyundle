@@ -53,7 +53,7 @@ struct SignUpBirthDayView: View {
                         .disabled(!isVaildDate)
                         .opacity(!isVaildDate ? 0.5 : 1)
                         .frame(width: geometry.size.width * 0.9)
-                        .buttonStyle(CustomButtonStyle())
+                        .buttonStyle(SignUpViewButtonStyle())
                     }
                 }
             }

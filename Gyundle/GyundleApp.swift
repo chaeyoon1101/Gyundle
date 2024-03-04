@@ -7,6 +7,7 @@ import KakaoSDKAuth
 struct GyundleApp: App {
     @StateObject var authViewModel = AuthViewModel()
     @StateObject var userViewModel = UserViewModel()
+    @StateObject var memoryViewModel = MemoryViewModel()
     
     let kakaoAppKey = Bundle.main.appKey(for: "KakaoNativeAppKey")
     
@@ -20,6 +21,7 @@ struct GyundleApp: App {
             ContentView()
                 .environmentObject(authViewModel)
                 .environmentObject(userViewModel)
+                .environmentObject(memoryViewModel)
                 .onOpenURL(perform: { url in
                     if AuthApi.isKakaoTalkLoginUrl(url) {
                         _ = AuthController.handleOpenUrl(url: url)

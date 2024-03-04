@@ -31,7 +31,7 @@ struct SignUpProfileView: View {
                         authViewModel.uploadUserInfo(userData: signUpData)
                     }
                     .frame(width: geometry.size.width * 0.9)
-                    .buttonStyle(CustomButtonStyle())
+                    .buttonStyle(SignUpViewButtonStyle())
                 }
             }
         }
