@@ -19,7 +19,9 @@ class FirebaseManager {
         let userRef = db.collection("users").document(userID)
         
         do {
-            try userRef.collection("memories").document(date.toMonth()).collection(date.toDay()).document("dailyMemories").setData(from: memory) { error in
+            let data = try Firestore.Encoder().encode(memory)
+            
+            userRef.collection("memories").document(date.toMonth()).setData(["dailyMemories" : FieldValue.arrayUnion([data])], merge: true) { error in
                 if let error = error {
                     print("daily memory 업로드 실패", error.localizedDescription)
                     completion(error)
@@ -28,9 +30,44 @@ class FirebaseManager {
                     completion(nil)
                 }
             }
-        } catch let error {
-            print("\(error)")
-            completion(error)
+        } catch {
+            print(error)
+        }
+    }
+    
+    func fetchDailyMemory(date: Date, completion: @escaping (Result<Memory, Error>) -> Void) {
+        let db = Firestore.firestore()
+        
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("로그인 된 유저 정보가 없음")
+            return
+        }
+            
+        let date = date.toMonth()
+        let userRef = db.collection("users").document(userID)
+        
+        userRef.collection("memories").document(date).getDocument { document, error in
+            if let error = error {
+                print("fetch daily memory error", error)
+                return
+            }
+            
+            if let document = document, document.exists {
+                do {
+                    let data = try document.data(as: Memory.self)
+                    
+                    print("성공")
+                    completion(.success(data))
+                } catch {
+                    print("에러", error.localizedDescription)
+                    completion(.failure(error))
+                }
+            } else {
+                if let error = error {
+                    print("document가 없음", error)
+                    completion(.failure(error))
+                }
+            }
         }
     }
     

@@ -1,10 +1,3 @@
-//
-//  ImageManager.swift
-//  Gyundle
-//
-//  Created by 임채윤 on 3/4/24.
-//
-
 import Foundation
 import SwiftUI
 

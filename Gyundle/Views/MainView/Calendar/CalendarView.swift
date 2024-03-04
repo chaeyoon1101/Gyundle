@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CalendarView: View {
     @EnvironmentObject private var calendarViewModel: CalendarViewModel
-    
+    @EnvironmentObject private var memoryViewModel: MemoryViewModel
     var body: some View {
         VStack {
             CalendarTitle()
@@ -23,8 +23,10 @@ struct CalendarView: View {
                         }
                 )
         }
-        .onChange(of: calendarViewModel.currentDate) { newValue in
-            print(newValue)
+        .onAppear {
+            Task {
+                memoryViewModel.fetchDailyMemories(date: calendarViewModel.currentDate)
+            }
         }
     }
 }

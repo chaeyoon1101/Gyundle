@@ -17,28 +17,26 @@ struct DailyMemorizeView: View {
     var body: some View {
         NavigationView {
             GeometryReader { geometry in
-                VStack {        
-                    if !enteredPhotos.isEmpty {
-                        HStack(spacing: 4) {
-                            ForEach(0..<enteredPhotos.count, id: \.self) { index in
-                                let size = geometry.size.width / Double(enteredPhotos.count) - 4
-                                DailyMemoryPhoto(
-                                    photos: $enteredPhotos,
-                                    index: index,
-                                    size: size
-                                )
+                VStack {      
+                    ScrollView(.vertical) {
+                        if !enteredPhotos.isEmpty {
+                            HStack(spacing: 4) {
+                                ForEach(0..<enteredPhotos.count, id: \.self) { index in
+                                    let size = geometry.size.width / Double(enteredPhotos.count) - 4
+                                    DailyMemoryPhoto(
+                                        photos: $enteredPhotos,
+                                        index: index,
+                                        size: size
+                                    )
+                                }
                             }
                         }
-                    }
-                    
-                    
-                    VStack {
+                        
                         DailyMemoryTextEditor(enteredText: $enteredText)
-                        
-                        Spacer()
-                        
-                        bottomBar
                     }
+                    Spacer()
+                    
+                    bottomBar
                 }
                 .navigationTitle("\(selectedDateToString())의 기억")
                 .navigationBarTitleDisplayMode(.inline)
@@ -74,25 +72,31 @@ struct DailyMemorizeView: View {
     
     private func uploadMemory() async {
         let date = calendarViewModel.selectedDate
-        let text = enteredText
+        let text = enteredText.replacingOccurrences(of: "\n", with: "\\n")
+        let id = date.toDay()
         var photos = [String]()
         
-        for item in selectedItems {
-            if let data = try? await item.loadTransferable(type: Data.self) {
-                if let image = UIImage(data: data) {
-                    imageViewModel.uploadImage(image) { result in
-                        switch result {
-                        case .success(let url):
-                            photos.append(url.absoluteString)
-                            
-                            if photos.count == selectedItems.count {
-                                let memory = DailyMemory(date: date, text: text, photos: photos)
-                                memoryViewModel.uploadDailyMemory(memory: memory)
+        if selectedItems.isEmpty {
+            let memory = DailyMemory(id: id, date: date, text: text, photos: photos)
+            memoryViewModel.uploadDailyMemory(memory: memory)
+        } else {
+            for item in selectedItems {
+                if let data = try? await item.loadTransferable(type: Data.self) {
+                    if let image = UIImage(data: data) {
+                        imageViewModel.uploadImage(image) { result in
+                            switch result {
+                            case .success(let url):
+                                photos.append(url.absoluteString)
                                 
-                                isPresented = false
+                                if photos.count == selectedItems.count {
+                                    let memory = DailyMemory(id: id, date: date, text: text, photos: photos)
+                                    memoryViewModel.uploadDailyMemory(memory: memory)
+                                    
+                                    isPresented = false
+                                }
+                            case .failure(let error):
+                                print(error)
                             }
-                        case .failure(let error):
-                            print(error)
                         }
                     }
                 }
