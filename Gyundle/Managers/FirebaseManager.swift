@@ -138,8 +138,4 @@ class FirebaseManager {
            }
         }
     }
-    
-    
-    
-    
 }

@@ -12,8 +12,7 @@ struct MainView: View {
     
     var body: some View {
         ZStack {
-            Color.sc
-                .ignoresSafeArea(.all)
+            Color.sc.ignoresSafeArea(.all)
         
             GeometryReader { geometry in
                 ZStack {
@@ -23,16 +22,12 @@ struct MainView: View {
                             
                             let selectedDate = calendarViewModel.selectedDate
                             
-                            // 선택한 달 데이터들
                             if let dogWalkingMemories = memoryViewModel.dogWalkingMemories[selectedDate.toMonth()],
-                               // 선택한 날 데이터
                                let dogWalkingMemory = dogWalkingMemories[selectedDate.toDay()] {
                                 DogWalkingMemoryView()
                             }
                             
-                            // 선택한 달 데이터들
                             if let dailyMemories = memoryViewModel.dailyMemories[selectedDate.toMonth()],
-                               // 선택한 날 데이터
                                let dailyMemory = dailyMemories[selectedDate.toDay()] {
                                 DailyMemoryView()
                             }
@@ -81,8 +76,6 @@ struct MainView: View {
             withAnimation {
                 isShowingAddMemoryView.toggle()
             }
-            
-            print("add")
         } label: {
             Image(systemName: "dog.fill")
                 .resizable()

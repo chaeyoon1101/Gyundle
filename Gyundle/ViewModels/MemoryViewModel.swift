@@ -11,7 +11,12 @@ class MemoryViewModel: ObservableObject {
     
     func uploadDailyMemory(memory: DailyMemory) {
         FirebaseManager.shared.uploadDailyMemory(memory: memory) { error in
+            if let error = error {
+                print(error)
+                return
+            }
             
+            self.fetchDailyMemories(date: memory.date)
         }
     }
     

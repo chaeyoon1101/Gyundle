@@ -17,8 +17,6 @@ struct CalendarGrid: View {
     
                                     CalendarCell(day: day, size: size)
                                         .frame(width: size, height: size)
-                                    
-                                    
                                 } else {
                                     Color.clear
                                         .frame(width: size, height: size)

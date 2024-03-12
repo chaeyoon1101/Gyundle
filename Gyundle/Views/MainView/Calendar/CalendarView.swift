@@ -20,13 +20,13 @@ struct CalendarView: View {
                             } else {
                                 print("Cancelled")
                             }
+                            
+                            memoryViewModel.fetchDailyMemories(date: calendarViewModel.currentDate)
                         }
                 )
         }
-        .onAppear {
-            Task {
-                memoryViewModel.fetchDailyMemories(date: calendarViewModel.currentDate)
-            }
+        .task {
+            memoryViewModel.fetchDailyMemories(date: calendarViewModel.currentDate)
         }
     }
 }
