@@ -6,65 +6,73 @@ import FirebaseAuth
 class FirebaseManager {
     static let shared = FirebaseManager()
     
+    let db = Firestore.firestore()
+    
     private init() { }
     
-    func uploadDailyMemory(memory: DailyMemory, completion: @escaping (Error?) -> Void) {
-        let db = Firestore.firestore()
+    func uploadMemory<T: Codable & Memorable>(memory: T, completion: @escaping (Error?) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
             return
         }
-            
+        
+        let memoryType = memory is DailyMemory ? "dailyMemories" : "WalkingMemories"
+        
         let date = memory.date
         let userRef = db.collection("users").document(userID)
         
         do {
-            let data = try Firestore.Encoder().encode(memory)
+            let encoder = Firestore.Encoder()
+            let data = try encoder.encode(memory)
             
-            userRef.collection("memories").document(date.toMonth()).setData(["dailyMemories" : FieldValue.arrayUnion([data])], merge: true) { error in
+            let memoriesRef = userRef.collection("memories").document(date.toYearMonth())
+            
+            memoriesRef.setData(
+                [memoryType: FieldValue.arrayUnion([data])],
+                merge: true
+            ) { error in
                 if let error = error {
-                    print("daily memory 업로드 실패", error.localizedDescription)
+                    print("\(memoryType) 메모리 업로드 실패:", error)
                     completion(error)
-                } else {
-                    print("daily memory 업로드 성공")
-                    completion(nil)
                 }
+                
+                print("\(memoryType) 메모리 업로드 성공")
+                completion(nil)
             }
+            
         } catch {
-            print(error)
+            print("\(T.self) 메모리 데이터 업로드 실패:", error)
         }
     }
     
-    func fetchDailyMemory(date: Date, completion: @escaping (Result<Memory, Error>) -> Void) {
-        let db = Firestore.firestore()
-        
+    func fetchMemories(from yearMonth: String, completion: @escaping (Result<Memory, Error>) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
             return
         }
-            
-        let date = date.toMonth()
-        let userRef = db.collection("users").document(userID)
         
-        userRef.collection("memories").document(date).getDocument { document, error in
+        let userRef = db.collection("users").document(userID)
+        let memoriesRef = userRef.collection("memories").document(yearMonth)
+        
+        memoriesRef.getDocument { document, error in
             if let error = error {
-                print("fetch daily memory error", error)
-                return
+                print("Memory 불러오는 데에 실패: ", error)
+                completion(.failure(error))
             }
             
             if let document = document, document.exists {
                 do {
                     let data = try document.data(as: Memory.self)
                     
-                    print("성공")
+                    print("fetch 성공")
                     completion(.success(data))
                 } catch {
-                    print("에러", error.localizedDescription)
+                    print("fetch 실패: ", error.localizedDescription)
                     completion(.failure(error))
                 }
             } else {
                 if let error = error {
-                    print("document가 없음", error)
+                    print("\(yearMonth) document가 존재하지 않음", error)
                     completion(.failure(error))
                 }
             }

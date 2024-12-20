@@ -2,37 +2,37 @@ import Foundation
 import SwiftUI
 
 class MemoryViewModel: ObservableObject {
-    @Published var dogWalkingMemories: [String: [String: Any]] = [:]
-    @Published var dailyMemories: [String: [String: DailyMemory]] = [:]
+    @Published var dogWalkingMemories: [String: [DogWalkingMemory]] = [:]
+    @Published var dailyMemories: [String: [DailyMemory]] = [:]
     
-    func uploadDogWalkingMemory() {
-        
-    }
-    
-    func uploadDailyMemory(memory: DailyMemory) {
-        FirebaseManager.shared.uploadDailyMemory(memory: memory) { error in
+    func uploadMemory<T: Codable & Memorable>(memory: T) {
+        FirebaseManager.shared.uploadMemory(memory: memory) { error in
             if let error = error {
                 print(error)
                 return
             }
             
-            self.fetchDailyMemories(date: memory.date)
+            self.fetchMemories(date: memory.date)
         }
     }
     
-    func fetchDogWalkingMemories() {
+    func fetchMemories(date: Date) {
+        let yearMonth = date.toYearMonth()
         
-    }
-    
-    func fetchDailyMemories(date: Date) {
-        FirebaseManager.shared.fetchDailyMemory(date: date) { result in
+        FirebaseManager.shared.fetchMemories(from: yearMonth) { result in
             switch result {
             case .success(let memories):
-                var dailyMemories: [String: DailyMemory] = [:]
-                for dailyMemory in memories.dailyMemories {
-                    dailyMemories[dailyMemory.id] = dailyMemory
+                if let dailyMemories = memories.dailyMemories {
+                    print("dailyMemories가 있음 \(yearMonth)")
+                    
+                    self.dailyMemories[yearMonth] = dailyMemories
                 }
-                self.dailyMemories[date.toMonth()] = dailyMemories
+                
+                if let walkingMemories = memories.walkingMemories {
+                    print("dog walkingMemories가 있음 \(yearMonth)")
+                    
+                    self.dogWalkingMemories[yearMonth] = walkingMemories
+                }
             case .failure(let error):
                 print(error)
             }

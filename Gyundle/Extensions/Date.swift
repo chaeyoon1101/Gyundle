@@ -1,7 +1,7 @@
 import Foundation
 
 extension Date {
-    func toMonth() -> String {
+    func toYearMonth() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = .current
         dateFormatter.dateFormat = "yyyy_M"
