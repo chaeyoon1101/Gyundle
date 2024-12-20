@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DogWalkingMemoryView: View {
+    var memory: DogWalkingMemory
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -14,10 +16,6 @@ struct DogWalkingMemoryView: View {
             }
             .padding(.leading)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 8)   
     }
-}
-
-#Preview {
-    DogWalkingMemoryView()
 }

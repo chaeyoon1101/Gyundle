@@ -10,7 +10,8 @@ struct DailyMemoryPhoto: View {
         if photos.count > index {
             photos[index]
                 .resizable()
-                .frame(width: size, height: size)
+                .frame(height: size / Double(photos.count) - 4)
+                .frame(maxWidth: size / Double(photos.count) - 4, maxHeight: size / 2 - Double(photos.count) * 4)
                 .aspectRatio(contentMode: .fill)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }

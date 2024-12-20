@@ -3,7 +3,7 @@ import SwiftUI
 
 class CalendarViewModel: ObservableObject {
     @Published var today: Date = Date()
-    @Published var currentDate: Date = Date()
+    @Published var currentPageDate: Date = Date()
     @Published var selectedDate: Date = Date()
 
     private let calendar = Calendar.current
@@ -11,7 +11,7 @@ class CalendarViewModel: ObservableObject {
     func isToday(day: Int) -> Bool {
         let todayComponents = calendar.dateComponents([.year, .month, .day], from: today)
         
-        let currentComponents = calendar.dateComponents([.year, .month], from: currentDate)
+        let currentComponents = calendar.dateComponents([.year, .month], from: currentPageDate)
         
         let isToday = todayComponents.year  == currentComponents.year &&
                       todayComponents.month == currentComponents.month &&
@@ -23,7 +23,7 @@ class CalendarViewModel: ObservableObject {
     func isSelectedDate(day: Int) -> Bool {
         let selectComponents = calendar.dateComponents([.year, .month, .day], from: selectedDate)
         
-        let currentComponents = calendar.dateComponents([.year, .month], from: currentDate)
+        let currentComponents = calendar.dateComponents([.year, .month], from: currentPageDate)
         
         let isSelectedDate = selectComponents.year  == currentComponents.year &&
                              selectComponents.month == currentComponents.month &&
@@ -33,7 +33,7 @@ class CalendarViewModel: ObservableObject {
     }
     
     func selectDate(day: Int) {
-        let currentComponents = calendar.dateComponents([.year, .month], from: currentDate)
+        let currentComponents = calendar.dateComponents([.year, .month], from: currentPageDate)
         
         var selectComponents = DateComponents()
         selectComponents.year = currentComponents.year
@@ -56,9 +56,9 @@ class CalendarViewModel: ObservableObject {
     private func changeMonth(by value: Int) {
         let calendar = Calendar.current
         
-        if let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) {
+        if let newDate = calendar.date(byAdding: .month, value: value, to: currentPageDate) {
             withAnimation {
-                self.currentDate = newDate
+                self.currentPageDate = newDate
             }
         }
     }

@@ -6,7 +6,7 @@ struct CalendarTitle: View {
     var body: some View {
         VStack {
             HStack(spacing: 18) {
-                Text(calendarViewModel.currentDate, formatter: Self.dateFormatter)
+                Text(calendarViewModel.currentPageDate, formatter: Self.dateFormatter)
                     .animation(nil)
                 
                 Spacer()

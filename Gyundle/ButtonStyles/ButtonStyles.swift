@@ -13,4 +13,15 @@ struct SignUpViewButtonStyle: ButtonStyle {
     }
 }
 
+struct WalkingMemoryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .frame(width: 72, height: 72)
+            .background(.fg)
+            .foregroundColor(.bg)
+            .clipShape(Circle())
+            .opacity(configuration.isPressed ? 0.8 : 1)
+    }
+}
+
 

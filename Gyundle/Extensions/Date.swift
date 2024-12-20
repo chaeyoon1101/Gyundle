@@ -16,4 +16,12 @@ extension Date {
         
         return dateFormatter.string(from: self)
     }
+    
+    func toString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = .current
+        dateFormatter.dateFormat = "M월 d일"
+        
+        return dateFormatter.string(from: self)
+    }
 }

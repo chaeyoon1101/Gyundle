@@ -23,19 +23,35 @@ class MemoryViewModel: ObservableObject {
             switch result {
             case .success(let memories):
                 if let dailyMemories = memories.dailyMemories {
-                    print("dailyMemories가 있음 \(yearMonth)")
-                    
                     self.dailyMemories[yearMonth] = dailyMemories
                 }
                 
                 if let walkingMemories = memories.walkingMemories {
-                    print("dog walkingMemories가 있음 \(yearMonth)")
-                    
                     self.dogWalkingMemories[yearMonth] = walkingMemories
                 }
             case .failure(let error):
                 print(error)
             }
+        }
+    }
+    
+    func getMemory<T: Memorable>(of type: MemoryType, from date: Date) -> T? {
+        let yearMonth = date.toYearMonth()
+        let day = date.toDay()
+        
+        switch type {
+        case .daily:
+            let dailyMemory = dailyMemories[yearMonth]?.first { memory in
+                memory.id == day
+            }
+                
+            return dailyMemory as? T
+        case .dogWalking:
+            let dogWalkingMemory = dogWalkingMemories[yearMonth]?.first { memory in
+                memory.id == day
+            }
+            
+            return dogWalkingMemory as? T
         }
     }
 }

@@ -10,7 +10,7 @@ struct DailyMemorizeView: View {
     @Binding var isPresented: Bool
     
     @State private var enteredText: String = ""
-    @State private var enteredPhotos: [Image] = []
+    @State private var enteredPhotos: [Image] = [Image("TestImage")]
 
     @State var selectedItems: [PhotosPickerItem] = []
     
@@ -22,7 +22,7 @@ struct DailyMemorizeView: View {
                         if !enteredPhotos.isEmpty {
                             HStack(spacing: 4) {
                                 ForEach(0..<enteredPhotos.count, id: \.self) { index in
-                                    let size = geometry.size.width / Double(enteredPhotos.count) - 4
+                                    let size = geometry.size.width
                                     DailyMemoryPhoto(
                                         photos: $enteredPhotos,
                                         index: index,
@@ -78,7 +78,7 @@ struct DailyMemorizeView: View {
         
         if selectedItems.isEmpty {
             let memory = DailyMemory(id: id, date: date, text: text, photos: photos)
-            memoryViewModel.uploadDailyMemory(memory: memory)
+            memoryViewModel.uploadMemory(memory: memory)
             
             isPresented = false
         } else {
@@ -92,7 +92,7 @@ struct DailyMemorizeView: View {
                                 
                                 if photos.count == selectedItems.count {
                                     let memory = DailyMemory(id: id, date: date, text: text, photos: photos)
-                                    memoryViewModel.uploadDailyMemory(memory: memory)
+                                    memoryViewModel.uploadMemory(memory: memory)
                                     
                                     isPresented = false
                                 }
