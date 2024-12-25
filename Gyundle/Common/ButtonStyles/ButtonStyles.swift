@@ -40,7 +40,7 @@ struct AddMemoryButtonStyle: ButtonStyle {
             .foregroundColor(ColorConstant.fgPrimary)
             .clipShape(Circle())
             .opacity(configuration.isPressed ? 0.8 : 1)
-            .shadow(color: ColorConstant.bgPrimary.opacity(0.4), radius: 10, x: 10, y: 10)
+            .shadow(color: ColorConstant.fgPrimary.opacity(0.4), radius: 10, x: 10, y: 10)
             .shadow(color: ColorConstant.fgPrimary.opacity(0.1), radius: 10, x: -8, y: -8)
     }
 }

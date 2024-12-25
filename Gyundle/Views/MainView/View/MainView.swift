@@ -14,7 +14,7 @@ struct MainView: View {
         ZStack {
             Self.background(color: ColorConstant.bgPrimary)
             
-            VStack {
+            ZStack {
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     
@@ -38,16 +38,21 @@ struct MainView: View {
                 
                 if showingMemorizeView {
                     MemorizeView()
-                        .padding(.bottom, 18)
+                        .align(.bottom)
+                        .padding(.bottom, 120)
                 }
                 
                 MemorizeButton()
+                    .align(.bottom)
                     .padding(.bottom, 24)
             }
             .padding()
         }
         .fullScreenCover(isPresented: $isPresentedDailyMemorizeView) {
-            DailyMemorizeView(isPresented: $isPresentedDailyMemorizeView)
+            DailyMemorizeView(
+                isPresented: $isPresentedDailyMemorizeView,
+                date: calendarViewModel.selectedDate
+            )
         }
         .fullScreenCover(isPresented: $isPresentedWalkingMemorizeView) {
             WalkingMemorizeView(isPresented: $isPresentedWalkingMemorizeView)
@@ -75,7 +80,7 @@ struct MainView: View {
     private func MemorizeView() -> some View {
         HStack {
             MemorizeViewButton(
-                color: Color.brown.opacity(0.5),
+                color: Color.brown,
                 image: "WaitingDog",
                 text: "산책하기"
             ) {
@@ -83,7 +88,7 @@ struct MainView: View {
             }
             
             MemorizeViewButton(
-                color: Color.indigo.opacity(0.7),
+                color: Color.indigo,
                 image: "WriteDiary",
                 text: "일기쓰기"
             ) {
@@ -110,7 +115,7 @@ struct MainView: View {
         }
         .frame(height: 120)
         .frame(maxWidth: .infinity)
-        .foregroundStyle(ColorConstant.fgPrimary)
+        .foregroundStyle(Color.white)
         .background {
             RoundedRectangle(cornerRadius: 12)
                 .fill(color)
