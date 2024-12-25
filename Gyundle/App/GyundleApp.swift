@@ -7,7 +7,6 @@ import KakaoSDKAuth
 struct GyundleApp: App {
     @StateObject var authViewModel = AuthViewModel()
     @StateObject var userViewModel = UserViewModel()
-    @StateObject var memoryViewModel = MemoryViewModel()
     
     init() {
         FirebaseApp.configure()
@@ -21,7 +20,6 @@ struct GyundleApp: App {
             ContentView()
                 .environmentObject(authViewModel)
                 .environmentObject(userViewModel)
-                .environmentObject(memoryViewModel)
                 .onOpenURL(perform: { url in
                     if AuthApi.isKakaoTalkLoginUrl(url) {
                         _ = AuthController.handleOpenUrl(url: url)

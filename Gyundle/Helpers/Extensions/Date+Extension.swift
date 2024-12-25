@@ -24,4 +24,12 @@ extension Date {
         
         return dateFormatter.string(from: self)
     }
+    
+    func formatting(_ format: String) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = .current
+        dateFormatter.dateFormat = format
+        
+        return dateFormatter.string(from: self)
+    }
 }
