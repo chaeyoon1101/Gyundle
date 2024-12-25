@@ -8,6 +8,8 @@
 import SwiftUI
 
 enum ColorConstant {
+    static let accent = Color.accent
+    
     static let bgPrimary = Color.background1
     static let bgSecondary = Color.background2
     static let bgContent = Color.background3
