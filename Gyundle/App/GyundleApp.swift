@@ -9,10 +9,10 @@ struct GyundleApp: App {
     @StateObject var userViewModel = UserViewModel()
     @StateObject var memoryViewModel = MemoryViewModel()
     
-    let kakaoAppKey = Bundle.main.appKey(for: "KakaoNativeAppKey")
-    
     init() {
         FirebaseApp.configure()
+        
+        let kakaoAppKey = Bundle.main.appKey(for: "KakaoNativeAppKey")
         KakaoSDK.initSDK(appKey: kakaoAppKey)
     }
     

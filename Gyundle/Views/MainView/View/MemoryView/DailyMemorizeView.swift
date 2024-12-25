@@ -46,7 +46,7 @@ struct DailyMemorizeView: View {
                             isPresented = false
                         } label: {
                             Image(systemName: "xmark")
-                                .foregroundStyle(.fg)
+                                .foregroundStyle(ColorConstant.fgPrimary)
                         }
                     }
                     
@@ -60,7 +60,7 @@ struct DailyMemorizeView: View {
                                 ProgressView()
                             } else {
                                 Text("완료")
-                                    .foregroundStyle(.fg)
+                                    .foregroundStyle(ColorConstant.fgPrimary)
                             }
                         }
                     }
@@ -113,7 +113,7 @@ struct DailyMemorizeView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24)
-                    .foregroundStyle(.fg)
+                    .foregroundStyle(ColorConstant.fgPrimary)
             }
             .padding(.leading, 24)
             .onChange(of: selectedItems) { _, newItems in
@@ -133,7 +133,7 @@ struct DailyMemorizeView: View {
             Spacer()
         }
         .frame(height: 48)
-        .background(Color.sc)
+        .background(ColorConstant.bgSecondary)
     }
     
     private func selectedDateToString() -> String {

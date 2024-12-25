@@ -16,6 +16,10 @@ class LocationDataManager: NSObject, ObservableObject, CLLocationManagerDelegate
         locationManager.startUpdatingLocation()
     }
     
+    func stopUpdatingLocation() {
+        locationManager.stopUpdatingLocation()
+    }
+    
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedAlways:
@@ -53,6 +57,8 @@ class LocationDataManager: NSObject, ObservableObject, CLLocationManagerDelegate
             let lon = recentlyLocation.coordinate.longitude
             
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            print(coordinate.latitude.description)
+            print(coordinate.latitude.debugDescription)
             
             coordinates.append(coordinate)
         }

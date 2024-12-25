@@ -54,14 +54,13 @@ class KakaoAuthManager {
         UserApi.shared.me() { user, error in
             if let error = error {
                 print("카카오톡 사용자 정보가져오기 에러 \(error.localizedDescription)")
-                // completion
-                return
+                completion(error)
             }
             
             guard let email = user?.kakaoAccount?.email,
                   let password = user?.id else {
                 print("email나 password중 nil")
-                // completion
+                completion(error)
                 return
             }
             

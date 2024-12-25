@@ -21,7 +21,6 @@ enum AuthStatus {
 
 class AuthViewModel: NSObject, ObservableObject {
     @Published var status: AuthStatus = .loggedOut
-    
     @Published var currentUser: FirebaseAuth.User?
     
     override init() {
@@ -29,45 +28,31 @@ class AuthViewModel: NSObject, ObservableObject {
         self.addStateDidChangeListener()
     }
     
+    
+    // MARK: 현재 유저 Auth 상태 확인
     func checkStatus() {
-        currentUser = Auth.auth().currentUser
-        
-        if currentUser != nil {
-            status = .loggedIn
-            FirebaseManager.shared.hasUserInfo(id: currentUser!.uid) { hasUserInfo in
-                self.status = hasUserInfo ? .loggedIn : .signUp
-            }
-        } else {
+        guard let currentUser = Auth.auth().currentUser else {
             status = .loggedOut
-        }
-        
-        print("auth status: ", status)
-    }
-    
-    private func addStateDidChangeListener() {
-        Auth.auth().addStateDidChangeListener() { auth, user in
-            self.checkStatus()
-        }
-    }
-    
-    func uploadUserInfo(userData: UserInfoData) {
-        guard let currentUser = currentUser else {
-            print("can't upload user info currnetUser is nil")
+            print("현재 로그아웃 상태")
             return
         }
         
-        let user = User(
-            id: currentUser.uid,
-            email: currentUser.email ?? currentUser.uid,
-            name: userData.name,
-            photo: userData.photo,
-            dateOfBirth: userData.dateOfBirth
-        )
+        self.status = .loggedIn
         
-        FirebaseManager.shared.uploadUserInfo(user: user) { error in
-            if let error = error {
-                print("error")
+        // db에 유저 데이터가 있는 지 확인 후 없으면 회원가입 상태로 변경
+        FirebaseManager.shared.hasUserInfo(id: currentUser.uid) { hasUserInfo in
+            if !hasUserInfo {
+                self.status = .signUp
             }
+        }
+        
+        print("유저 auth 상태: \(self.status)")
+    }
+    
+    
+    // MARK: 유저 Auth 변경 감시
+    private func addStateDidChangeListener() {
+        Auth.auth().addStateDidChangeListener() { auth, user in
             self.checkStatus()
         }
     }
@@ -81,7 +66,6 @@ class AuthViewModel: NSObject, ObservableObject {
             handleAppleLoginCompletion(result)
             
         case .kakaoLogin:
-            print("case kakao login")
             handleKakaoLogin()
         
         case .signOut:
@@ -89,7 +73,7 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
     
-    // Apple Login
+    // MARK: Apple Login
     private func handleAppleLogin(_ request: ASAuthorizationAppleIDRequest) {
         AppleAuthManager.shared.login(request)
     }
@@ -97,7 +81,6 @@ class AuthViewModel: NSObject, ObservableObject {
     private func handleAppleLoginCompletion(_ result: Result<ASAuthorization, Error>) {
         switch result {
         case .success(let user):
-            print("success")
             guard let credential = user.credential as? ASAuthorizationAppleIDCredential else {
                 print("error with firebase")
                 return
@@ -105,7 +88,7 @@ class AuthViewModel: NSObject, ObservableObject {
             
             AppleAuthManager.shared.authenticate(credential: credential) { error in
                 if let error = error {
-                    // 에러처리
+                    print("애플 로그인 실패: ", error)
                 } else {
                     self.checkStatus()
                 }
@@ -115,8 +98,7 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
     
-    // Kakao Login
-    
+    // MARK: Kakao Login
     private func handleKakaoLogin() {
         print("kakao login")
         KakaoAuthManager.shared.login { error in
@@ -129,7 +111,8 @@ class AuthViewModel: NSObject, ObservableObject {
         }
     }
 
-    
+        
+    // MARK: 로그아웃
     private func signOut() {
         do {
             try Auth.auth().signOut()

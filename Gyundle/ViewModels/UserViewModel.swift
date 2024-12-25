@@ -1,4 +1,5 @@
 import Foundation
+import FirebaseAuth
 
 class UserViewModel: ObservableObject {
     @Published var user: User?
@@ -15,23 +16,24 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func uploadUserInfo(userData: UserInfoData) {
-        if userData.id == "" {
+    // MARK: 유저 정보 DB에 업로드
+    func uploadUserInfo(userData: UserInfoData)  {
+        guard let currentUser = Auth.auth().currentUser else {
+            print("can't upload user info. currnetUser is nil")
             return
         }
         
         let user = User(
-            id: userData.id,
-            email: userData.email,
+            id: currentUser.uid,
+            email: currentUser.email ?? currentUser.uid,
             name: userData.name,
             photo: userData.photo,
             dateOfBirth: userData.dateOfBirth
         )
         
         FirebaseManager.shared.uploadUserInfo(user: user) { error in
-            print("Uploading User info")
-            if let error = error {
-                print("error", error)
+            if let error {
+                print("유저 정보 업로드 실패: ", error.localizedDescription)
                 return
             }
             

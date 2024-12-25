@@ -59,7 +59,7 @@ struct ContentView: View {
                     Text("마이페이지")
                 }.tag(Tab.myView)
         }
-        .accentColor(.fg)
+        .accentColor(ColorConstant.fgPrimary)
     }
         
 }

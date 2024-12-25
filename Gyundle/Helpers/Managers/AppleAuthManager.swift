@@ -39,6 +39,8 @@ class AppleAuthManager {
         }
     }
     
+    
+    // MARK: Apple Authenticate Helper 함수들
     private func sha256(_ input: String) -> String {
         let inputData = Data(input.utf8)
         let hashedData = SHA256.hash(data: inputData)

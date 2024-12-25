@@ -54,9 +54,6 @@ extension DateTextType {
     mutating func moveToNext() {
         if let nextValue = DateTextType(rawValue: rawValue + 1) {
             self = nextValue
-            print(self)
         }
     }
-    
-    
 }

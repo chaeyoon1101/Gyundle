@@ -2,7 +2,7 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
-    @StateObject var locationDataManager = LocationDataManager()
+    @EnvironmentObject var locationDataManager: LocationDataManager
     @State private var userLocation: CLLocationCoordinate2D = .init()
     @State private var cameraPosition: MapCameraPosition = .automatic
     
@@ -17,7 +17,7 @@ struct MapView: View {
  
                         if !locationDataManager.coordinates.isEmpty {
                             MapPolyline(coordinates: locationDataManager.coordinates, contourStyle: .geodesic)
-                                .stroke(Color.bg, lineWidth: 4)
+                                .stroke(ColorConstant.bgPrimary, lineWidth: 4)
                         }
                     }
                     .mapControls {
@@ -56,12 +56,5 @@ struct MapView: View {
                 ProgressView()
             }
         }
-    }
-}
-
-extension CLLocationCoordinate2D: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(latitude)
-        hasher.combine(longitude)
     }
 }

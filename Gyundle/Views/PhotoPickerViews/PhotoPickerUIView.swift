@@ -16,7 +16,7 @@ struct PhotoPickerUIView: View {
                     .foregroundStyle(Color.secondary)
                     .background {
                         Circle()
-                            .fill(.sc)
+                            .fill(ColorConstant.bgSecondary)
                             .frame(width: 150, height: 150)
                     }
             }
@@ -24,7 +24,8 @@ struct PhotoPickerUIView: View {
             .clipShape(Circle())
             .aspectRatio(contentMode: .fill)
             .background {
-                Circle().fill(.fg)
+                Circle()
+                    .fill(ColorConstant.bgSecondary)
             }
             .onAppear {
                 print("PhotoPickerUIView imageURL: ", imageURL)
