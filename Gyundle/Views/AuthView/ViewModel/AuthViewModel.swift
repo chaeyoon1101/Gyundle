@@ -14,46 +14,39 @@ enum AuthAction {
 }
 
 enum AuthStatus {
+    case initializing
     case loggedIn
     case loggedOut
     case signUp
 }
 
-class AuthViewModel: NSObject, ObservableObject {
-    @Published var status: AuthStatus = .loggedOut
+class AuthViewModel: ObservableObject {
+    @Published var status: AuthStatus = .initializing
     @Published var currentUser: FirebaseAuth.User?
     
-    override init() {
-        super.init()
-        self.addStateDidChangeListener()
+    private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
+    
+    init() {
+        setupAuthStateListener()
     }
     
-    
-    // MARK: 현재 유저 Auth 상태 확인
-    func checkStatus() {
-        guard let currentUser = Auth.auth().currentUser else {
-            status = .loggedOut
-            print("현재 로그아웃 상태")
-            return
-        }
-        
-        self.status = .loggedIn
-        
-        // db에 유저 데이터가 있는 지 확인 후 없으면 회원가입 상태로 변경
-        FirebaseManager.shared.hasUserInfo(id: currentUser.uid) { hasUserInfo in
-            if !hasUserInfo {
-                self.status = .signUp
+    // MARK: 유저 Auth 상태 확인
+    private func setupAuthStateListener() {
+        authStateListenerHandle = Auth.auth().addStateDidChangeListener() { [weak self] auth, user in
+            guard let self else { return }
+            
+            if let user {
+                Task {
+                    let hasUserInfo = await FirebaseManager.shared.hasUserInfo(id: user.uid)
+                    await MainActor.run {
+                        self.status = hasUserInfo ? .loggedIn : .signUp
+                    }
+                }
+            } else {
+                self.status = .loggedOut
             }
-        }
-        
-        print("유저 auth 상태: \(self.status)")
-    }
-    
-    
-    // MARK: 유저 Auth 변경 감시
-    private func addStateDidChangeListener() {
-        Auth.auth().addStateDidChangeListener() { auth, user in
-            self.checkStatus()
+            
+            print("유저 auth 상태: \(self.status)")
         }
     }
     
@@ -86,11 +79,12 @@ class AuthViewModel: NSObject, ObservableObject {
                 return
             }
             
-            AppleAuthManager.shared.authenticate(credential: credential) { error in
-                if let error = error {
-                    print("애플 로그인 실패: ", error)
-                } else {
-                    self.checkStatus()
+            Task {
+                AppleAuthManager.shared.authenticate(credential: credential) { error in
+                    if let error = error {
+                        print("애플 로그인 실패: ", error)
+                        return
+                    }
                 }
             }
         case .failure(let error):
@@ -101,14 +95,17 @@ class AuthViewModel: NSObject, ObservableObject {
     // MARK: Kakao Login
     private func handleKakaoLogin() {
         print("kakao login")
-        KakaoAuthManager.shared.login { error in
-            if let error = error {
-                print("Kakao login error:", error)
-                return
+        
+        Task {
+            KakaoAuthManager.shared.login { error in
+                if let error = error {
+                    print("Kakao login error:", error)
+                    return
+                }
+                
             }
-            
-            self.checkStatus()
         }
+        
     }
 
         
@@ -118,6 +115,12 @@ class AuthViewModel: NSObject, ObservableObject {
             try Auth.auth().signOut()
         } catch {
             print(error.localizedDescription)
+        }
+    }
+    
+    deinit {
+        if let authStateListenerHandle {
+            Auth.auth().removeStateDidChangeListener(authStateListenerHandle)
         }
     }
 }

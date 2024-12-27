@@ -2,18 +2,17 @@ import SwiftUI
 import FirebaseAuth
 import Firebase
 
+enum Tab {
+    case homeView
+    case friendView
+    case searchView
+    case myView
+}
+
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @EnvironmentObject var userViewModel: UserViewModel
     
     @State private var selection: Tab = .homeView
-    
-    enum Tab {
-        case homeView
-        case friendView
-        case searchView
-        case myView
-    }
     
     var body: some View {
         Group {
@@ -26,17 +25,9 @@ struct ContentView: View {
                 SignUpView()
             }
         }
-        .onChange(of: authViewModel.status) { newStatus in
-            if newStatus == .loggedIn, let currentUser = authViewModel.currentUser {
-                userViewModel.fetchUserData(id: currentUser.uid)
-            }
-        }
-        .onAppear {
-            authViewModel.checkStatus()
         }
     }
     
-    var mainView: some View {
         TabView(selection: $selection) {
             MainView()
                 .tabItem {
@@ -67,5 +58,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(AuthViewModel())
-        .environmentObject(UserViewModel())
 }
