@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MainView: View {
+struct HomeView: View {
     @StateObject private var memoryViewModel = MemoryViewModel()
     @StateObject private var calendarViewModel: CalendarViewModel = CalendarViewModel()
     
@@ -128,7 +128,7 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    HomeView()
         .environmentObject(UserViewModel())
         .environmentObject(MemoryViewModel())
 }

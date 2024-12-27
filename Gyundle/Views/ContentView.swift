@@ -15,21 +15,27 @@ struct ContentView: View {
     @State private var selection: Tab = .homeView
     
     var body: some View {
-        Group {
-            switch authViewModel.status {
-            case .loggedIn:
-                mainView
-            case .loggedOut:
-                AuthView()
-            case .signUp:
-                SignUpView()
-            }
-        }
+        switch authViewModel.status {
+        case .initializing:
+            LoadingIndicator()
+        case .loggedIn:
+            MainView()
+        case .loggedOut:
+            AuthView()
+        case .signUp:
+            SignUpView()
         }
     }
     
+    @ViewBuilder
+    func LoadingIndicator() -> some View {
+        LoadingView()
+    }
+    
+    @ViewBuilder
+    func MainView() -> some View {
         TabView(selection: $selection) {
-            MainView()
+            HomeView()
                 .tabItem {
                     Image(systemName: "house")
                     Text("홈")
