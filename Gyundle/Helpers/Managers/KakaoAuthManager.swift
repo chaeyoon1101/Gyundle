@@ -3,86 +3,69 @@ import KakaoSDKAuth
 import KakaoSDKUser
 import FirebaseAuth
 
+@MainActor
 class KakaoAuthManager {
     static let shared = KakaoAuthManager()
     
     private init() { }
     
-    func login(completion: @escaping (Error?) -> Void) {
-        if (UserApi.isKakaoTalkLoginAvailable()) {
-            UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
-                if let error = error {
-                    print(error)
-                } else {
-                    print("loginWithKakaoTalk() success.")
-
-                    _ = oauthToken
-                    
-                    self.signInFirebase() { error in
-                        if let error = error {
-                            completion(error)
-                            return
-                        }
-                        
-                        completion(nil)
-                    }
-                }
-            }
+    func login() async throws {
+        if UserApi.isKakaoTalkLoginAvailable() {
+            try await loginWithKakaoTalk()
         } else {
-            UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
-                if let error = error {
-                    print(error)
-                } else {
-                    print("loginWithKakaoAccount() success.")
-
-                    _ = oauthToken
-                    
-                    self.signInFirebase() { error in
-                        if let error = error {
-                            completion(error)
-                            return
-                        }
-                        
-                        completion(nil)
-                    }
-                }
-            }
+            try await loginWithKakaoAccount()
         }
     }
     
-    private func signInFirebase(completion: @escaping (Error?) -> Void) {
-        UserApi.shared.me() { user, error in
-            if let error = error {
-                print("카카오톡 사용자 정보가져오기 에러 \(error.localizedDescription)")
-                completion(error)
-            }
-            
-            guard let email = user?.kakaoAccount?.email,
-                  let password = user?.id else {
-                print("email나 password중 nil")
-                completion(error)
-                return
-            }
-            
-            Auth.auth().signIn(withEmail: email, password: String(password)) { result, error in
-                let isNewUser = result?.additionalUserInfo == nil
-            
-                if isNewUser {
-                    Auth.auth().createUser(withEmail: email, password: String(password)) { result, error in
-                        if let error = error {
-                            print("파이어베이스 사용자 생성 실패: \(error.localizedDescription)")
-                        } else {
-                            print("파이어베이스 사용자 생성 성공")
-                        }
-                    }
-                } else {
-                    if let error = error {
-                       print("파이어베이스 로그인 실패: \(error.localizedDescription)")
-                    } else {
-                       print("파이어베이스 로그인 성공")
-                    }
+    private func loginWithKakaoTalk() async throws {
+        let _: OAuthToken = try await withCheckedThrowingContinuation { continuation in
+            UserApi.shared.loginWithKakaoTalk { OAuthToken, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let token = OAuthToken {
+                    continuation.resume(returning: token)
                 }
-           }
+            }
+        }
+        
+        try await signInFirebase()
+    }
+    
+    private func loginWithKakaoAccount() async throws {
+        let _: OAuthToken = try await withCheckedThrowingContinuation { continuation in
+            UserApi.shared.loginWithKakaoAccount { OAuthToken, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let token = OAuthToken {
+                    continuation.resume(returning: token)
+                }
+            }
+        }
+        
+        try await signInFirebase()
+    }
+    
+    private func signInFirebase() async throws {
+        let kakaoUser: KakaoSDKUser.User = try await withCheckedThrowingContinuation { continuation in
+            UserApi.shared.me { user, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let user {
+                    continuation.resume(returning: user)
+                }
+            }
+        }
+        
+        guard let email = kakaoUser.kakaoAccount?.email,
+              let password = kakaoUser.id else {
+            throw AuthError.kakaoLoginFailed
+        }
+        
+        
+        do {
+            try await FirebaseManager.shared.createUser(withEmail: email, password: String(password))
+        } catch {
+            try await FirebaseManager.shared.signIn(withEmail: email, password: String(password))
         }
     }
 }

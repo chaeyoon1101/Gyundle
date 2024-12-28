@@ -3,6 +3,7 @@ import AuthenticationServices
 import CryptoKit
 import FirebaseAuth
 
+@MainActor
 class AppleAuthManager {
     static let shared = AppleAuthManager()
     private var nonce = ""
@@ -15,7 +16,7 @@ class AppleAuthManager {
         request.nonce = sha256(nonce)
     }
     
-    func authenticate(credential: ASAuthorizationAppleIDCredential, completion: @escaping((Error?) -> Void)) {
+    func authenticate(credential: ASAuthorizationAppleIDCredential) async throws {
         //getting token
         guard let token = credential.identityToken else {
             print("error with firebase")
@@ -28,15 +29,9 @@ class AppleAuthManager {
         }
         
         let firebaseCredential = OAuthProvider.credential(withProviderID: "apple.com", idToken: tokenString, rawNonce: nonce)
-        Auth.auth().signIn(with: firebaseCredential) { result, err in
-            if let err = err {
-                print(err.localizedDescription)
-                return
-            }
-            
-            completion(nil)
-            print("로그인 완료")
-        }
+        try await FirebaseManager.shared.signIn(with: firebaseCredential)
+        
+        print("Apple Login 완료")
     }
     
     

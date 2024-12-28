@@ -7,7 +7,7 @@ import CryptoKit
 import Firebase
 
 enum AuthAction {
-    case appleLogin(ASAuthorizationAppleIDRequest)
+    case appleRequest(ASAuthorizationAppleIDRequest)
     case appleLoginCompletion(Result<ASAuthorization, Error>)
     case kakaoLogin
     case signOut
@@ -50,16 +50,17 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    func send(action: AuthAction) {
+    @MainActor
+    func send(action: AuthAction) async {
         switch action {
-        case .appleLogin(let request):
-            handleAppleLogin(request)
+        case .appleRequest(let request):
+            handleAppleRequest(request)
             
         case .appleLoginCompletion(let result):
-            handleAppleLoginCompletion(result)
+            await handleAppleLoginCompletion(result)
             
         case .kakaoLogin:
-            handleKakaoLogin()
+            await handleKakaoLogin()
         
         case .signOut:
             signOut()
@@ -67,11 +68,13 @@ class AuthViewModel: ObservableObject {
     }
     
     // MARK: Apple Login
-    private func handleAppleLogin(_ request: ASAuthorizationAppleIDRequest) {
+    @MainActor
+    private func handleAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         AppleAuthManager.shared.login(request)
     }
     
-    private func handleAppleLoginCompletion(_ result: Result<ASAuthorization, Error>) {
+    @MainActor
+    private func handleAppleLoginCompletion(_ result: Result<ASAuthorization, Error>) async {
         switch result {
         case .success(let user):
             guard let credential = user.credential as? ASAuthorizationAppleIDCredential else {
@@ -79,13 +82,10 @@ class AuthViewModel: ObservableObject {
                 return
             }
             
-            Task {
-                AppleAuthManager.shared.authenticate(credential: credential) { error in
-                    if let error = error {
-                        print("애플 로그인 실패: ", error)
-                        return
-                    }
-                }
+            do {
+                try await AppleAuthManager.shared.authenticate(credential: credential)
+            } catch {
+                print("Apple Login 실패:", error)
             }
         case .failure(let error):
             print(error.localizedDescription)
@@ -93,17 +93,14 @@ class AuthViewModel: ObservableObject {
     }
     
     // MARK: Kakao Login
-    private func handleKakaoLogin() {
+    @MainActor
+    private func handleKakaoLogin() async {
         print("kakao login")
         
-        Task {
-            KakaoAuthManager.shared.login { error in
-                if let error = error {
-                    print("Kakao login error:", error)
-                    return
-                }
-                
-            }
+        do {
+            try await KakaoAuthManager.shared.login()
+        } catch {
+            print("카카로 로그인 실패:", error.localizedDescription)
         }
         
     }

@@ -10,6 +10,25 @@ class FirebaseManager {
     
     private init() { }
     
+    // MARK: Firebase Auth
+    
+    // Apple Auth
+    func signIn(with credential: AuthCredential) async throws {
+        try await Auth.auth().signIn(with: credential)
+    }
+    
+    
+    // Kakao Auth
+    func signIn(withEmail email: String, password: String) async throws {
+        try await Auth.auth().signIn(withEmail: email, password: password)
+    }
+    
+    func createUser(withEmail email: String, password: String) async throws {
+        try await Auth.auth().createUser(withEmail: email, password: password)
+    }
+    
+    
+    // MARK: Firestore DB
     func uploadMemory<T: Codable & Memorable>(memory: T) async throws {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
@@ -32,6 +51,7 @@ class FirebaseManager {
         )
     }
     
+    
     func fetchMemories(from yearMonth: String) async throws -> Memory {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
@@ -49,6 +69,7 @@ class FirebaseManager {
         return data
     }
     
+    
     func uploadUserInfo(user: User) async throws {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
@@ -58,6 +79,7 @@ class FirebaseManager {
         let userRef = db.collection("users").document(userID)
         try userRef.setData(from: user)
     }
+    
     
     func fetchUserData(id: String) async throws -> User {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -73,6 +95,20 @@ class FirebaseManager {
         return userData
     }
     
+    func hasUserInfo(id: String) async -> Bool {
+        let userRef = db.collection("users").document(id)
+        
+        do {
+            let document = try await userRef.getDocument()
+            
+            return document.exists
+        } catch {
+            return false
+        }
+    }
+    
+    
+    // MARK: Firebase Storage 이미지 저장
     func uploadPhoto(with datas: [Data], to folderName: String) async throws -> [String] {
         let storage = Storage.storage()
         let storageRef = storage.reference()
@@ -91,15 +127,5 @@ class FirebaseManager {
         return downloadUrls
     }
     
-    func hasUserInfo(id: String) async -> Bool {
-        let userRef = db.collection("users").document(id)
-        
-        do {
-            let document = try await userRef.getDocument()
-            
-            return document.exists
-        } catch {
-            return false
-        }
-    }
+
 }

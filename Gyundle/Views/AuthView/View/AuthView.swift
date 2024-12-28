@@ -18,6 +18,12 @@ struct AuthView: View {
             AppleLoginButton()
             
             KakaoLoginButton()
+            
+            Button("로그아웃 테스트") {
+                Task {
+                    await authViewModel.send(action: .signOut)
+                }
+            }
         }
         .font(.headline)
     }
@@ -40,9 +46,13 @@ struct AuthView: View {
         }
         .overlay {
             SignInWithAppleButton { request in
-                authViewModel.send(action: .appleLogin(request))
+                Task {
+                    await authViewModel.send(action: .appleRequest(request))
+                }
             } onCompletion: { result in
-                authViewModel.send(action: .appleLoginCompletion(result))
+                Task {
+                    await authViewModel.send(action: .appleLoginCompletion(result))
+                }
             }
             .blendMode(.color)
         }
@@ -66,8 +76,10 @@ struct AuthView: View {
                 .fill(ColorConstant.kakao)
         }
         .onTapGesture {
-            authViewModel.send(action: .kakaoLogin)
-            print("tapped Kakao login")
+            Task {
+                await authViewModel.send(action: .kakaoLogin)
+                print("tapped Kakao login")
+            }
         }
     }
 }
