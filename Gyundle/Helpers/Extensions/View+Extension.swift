@@ -8,9 +8,11 @@
 import SwiftUI
 
 extension View {
+    // MARK: Background 색상 지정
     static func background(color: Color) -> some View {
         color.ignoresSafeArea(.all)
     }
+    
     
     // MARK: UI 디자인
     func align(_ alignment: Alignment) -> some View {
@@ -28,8 +30,36 @@ extension View {
                     )
     }
     
+    
     // MARK: 키보드 숨기기
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
+    
+    
+    // MARK: Screen 크기
+    func getScreenWidth() -> CGFloat {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return 0
+        }
+        
+        return windowScene.screen.bounds.width
+    }
+    
+    func getScreenHeight() -> CGFloat {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return 0
+        }
+        
+        return windowScene.screen.bounds.height
+    }
+    
+    func getSafeAreaTop() -> CGFloat {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return 0
+        }
+        
+        return windowScene.windows.first?.safeAreaInsets.top ?? 0
+    }
+    
 }
