@@ -27,7 +27,7 @@ extension Date {
     
     func formatting(_ format: String) -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = .current
+        dateFormatter.locale = Locale(identifier: "ko_KR")
         dateFormatter.dateFormat = format
         
         return dateFormatter.string(from: self)
