@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MyPageView: View {
     @EnvironmentObject var userViewModel: UserViewModel
-    @StateObject var imageViewModel = ImageViewModel()
+    @StateObject var photosPickerViewModel = PhotosPickerViewModel()
     @ObservedObject var userData = UserInfoData()
     
     var body: some View {
@@ -12,11 +12,11 @@ struct MyPageView: View {
                     VStack {
                         Text(user.name)
                         Text(user.email)
-                        PhotoPickerView(
-                            imageViewModel: imageViewModel,
-                            uploadData: userData,
-                            selectedImageURL: user.photo
-                        )
+//                        PhotoPickerView(
+//                            imageViewModel: imageViewModel,
+//                            uploadData: userData,
+//                            selectedImageURL: user.photo
+//                        )
                     }
                     .onAppear {
                         updateUserData(user: user)
@@ -30,11 +30,11 @@ struct MyPageView: View {
                     }
                 }
             }
-            if imageViewModel.isUploading {
-                LoadingView()
-            }
+//            if imageViewModel.isUploading {
+//                LoadingView()
+//            }
         }
-        .disabled(imageViewModel.isUploading)
+//        .disabled(imageViewModel.isUploading)
     }
     
     private func updateUserData(user: User) {

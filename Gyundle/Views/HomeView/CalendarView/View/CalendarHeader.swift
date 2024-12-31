@@ -57,7 +57,7 @@ struct CalendarHeader: View {
 }
 
 #Preview {
-    MainView()
+    HomeView()
         .environmentObject(UserViewModel())
         .environmentObject(MemoryViewModel())
 }

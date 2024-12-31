@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var memoryViewModel = MemoryViewModel()
-    @StateObject private var calendarViewModel: CalendarViewModel = CalendarViewModel()
+    @StateObject private var calendarViewModel = CalendarViewModel()
     
     // MARK: View 상태 관리
     @State private var showingMemorizeView: Bool = false
@@ -28,13 +28,15 @@ struct HomeView: View {
                             DogWalkingMemoryView(memory: dogWalkingMemory)
                         }
                         
-                        if let dailyMemories: DailyMemory = memoryViewModel.getMemory(of: .daily, from: selectedDate) {
-                            DailyMemoryView(memory: dailyMemories)
+                        if let dailyMemory: DailyMemory = memoryViewModel.getMemory(of: .daily, from: selectedDate) {
+
+                            DailyMemoryView(memory: dailyMemory)
                         }
                     }
                 }
-                .frame(maxHeight: .infinity)
+                .safeAreaPadding(.top, getSafeAreaTop())
                 .blur(radius: showingMemorizeView ? 3 : 0)
+                .scrollClipDisabled()
                 
                 if showingMemorizeView {
                     MemorizeView()
@@ -47,6 +49,7 @@ struct HomeView: View {
                     .padding(.bottom, 24)
             }
             .padding()
+            .ignoresSafeArea()
         }
         .fullScreenCover(isPresented: $isPresentedDailyMemorizeView) {
             DailyMemorizeView(

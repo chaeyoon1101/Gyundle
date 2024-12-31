@@ -12,17 +12,17 @@ struct CalendarView: View {
         }
         .padding(.horizontal, 4)
         .task {
-            memoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
+            await memoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
         }
         .onChange(of: calendarViewModel.currentPageDate) { _, newValue in
             Task {
-                memoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
+                await memoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
             }
         }
     }
 }
 #Preview {
-    MainView()
+    HomeView()
         .environmentObject(UserViewModel())
         .environmentObject(MemoryViewModel())
 }

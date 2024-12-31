@@ -15,15 +15,19 @@ struct ContentView: View {
     @State private var selection: Tab = .homeView
     
     var body: some View {
-        switch authViewModel.status {
-        case .initializing:
-            LoadingIndicator()
-        case .loggedIn:
-            MainView()
-        case .loggedOut:
-            AuthView()
-        case .signUp:
-            SignUpView()
+        ZStack {
+            Self.background(color: ColorConstant.bgPrimary)
+            
+            switch authViewModel.status {
+            case .initializing:
+                LoadingIndicator()
+            case .loggedIn:
+                MainView()
+            case .loggedOut:
+                AuthView()
+            case .signUp:
+                SignUpView()
+            }
         }
     }
     

@@ -132,7 +132,7 @@ extension CalendarGrid {
 }
 
 #Preview {
-    MainView()
+    HomeView()
         .environmentObject(UserViewModel())
         .environmentObject(MemoryViewModel())
 }
