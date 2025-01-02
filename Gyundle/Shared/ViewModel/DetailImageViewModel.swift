@@ -1,5 +1,5 @@
 //
-//  HeroImageViewModel.swift
+//  DetailImageViewModel.swift
 //  Gyundle
 //
 //  Created by 임채윤 on 1/1/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-class HeroImageViewModel: ObservableObject {
+class DetailImageViewModel: ObservableObject {
     // MARK: 디테일 뷰에서 어떤 이미지를 보여줄 건지를 담는 프로퍼티
     @Published var isPresented: Bool = false
     @Published var photoSelection: [String] = []

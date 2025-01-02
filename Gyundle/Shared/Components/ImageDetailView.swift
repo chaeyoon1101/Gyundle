@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct ImageDetailView: View {
-    @EnvironmentObject private var heroImageViewModel: HeroImageViewModel
+    @EnvironmentObject private var detailImageViewModel: DetailImageViewModel
     
     var body: some View {
         ZStack {
             Self.background(color: .black)
-                .opacity(heroImageViewModel.scale)
+                .opacity(detailImageViewModel.scale)
             
-            TabView(selection: $heroImageViewModel.selectedPhoto) {
+            TabView(selection: $detailImageViewModel.selectedPhoto) {
                 
-                ForEach(heroImageViewModel.photoSelection, id: \.self) { photoURL in
+                ForEach(detailImageViewModel.photoSelection, id: \.self) { photoURL in
                     
                     CachedAsyncImage(url: URL(string: photoURL)) { phase in
                         switch phase {
@@ -34,8 +34,8 @@ struct ImageDetailView: View {
                         }
                     }
                     .tag(photoURL)
-                    .offset(heroImageViewModel.position)
-                    .scaleEffect(heroImageViewModel.scale)
+                    .offset(detailImageViewModel.position)
+                    .scaleEffect(detailImageViewModel.scale)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
@@ -53,15 +53,15 @@ struct ImageDetailView: View {
                     let screenHeight = getScreenHeight()
                     let scale = (screenHeight - translationHeight) / screenHeight
                     
-                    heroImageViewModel.updateTransform(position: position, scale: scale)
+                    detailImageViewModel.updateTransform(position: position, scale: scale)
                 }
                 .onEnded { value in
                     let translationHeight = abs(value.translation.height)
                     
                     if translationHeight > 200 {
-                        heroImageViewModel.popView()
+                        detailImageViewModel.popView()
                     } else {
-                        heroImageViewModel.resetTransform()
+                        detailImageViewModel.resetTransform()
                     }
                 }
         )
@@ -72,5 +72,5 @@ struct ImageDetailView: View {
     HomeView()
         .environmentObject(AuthViewModel())
         .environmentObject(UserViewModel())
-        .environmentObject(HeroImageViewModel())
+        .environmentObject(DetailImageViewModel())
 }

@@ -12,7 +12,7 @@ enum Tab {
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
-    @StateObject private var heroImageViewModel = HeroImageViewModel()
+    @StateObject private var detailImageViewModel = DetailImageViewModel()
     @State private var selection: Tab = .homeView
     
     
@@ -31,11 +31,11 @@ struct ContentView: View {
                 SignUpView()
             }
             
-            if heroImageViewModel.isPresented {
+            if detailImageViewModel.isPresented {
                 ImageDetailView()
             }
         }
-        .environmentObject(heroImageViewModel)
+        .environmentObject(detailImageViewModel)
     }
     
     @ViewBuilder

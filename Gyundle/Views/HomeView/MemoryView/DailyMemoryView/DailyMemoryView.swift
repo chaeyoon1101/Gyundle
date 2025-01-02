@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct DailyMemoryView: View {
-    @EnvironmentObject private var heroImageViewModel: HeroImageViewModel
+    @EnvironmentObject private var detailImageViewModel: DetailImageViewModel
+    @EnvironmentObject private var memoryViewModel: MemoryViewModel
     
     var memory: DailyMemory
     
@@ -47,7 +48,7 @@ struct DailyMemoryView: View {
                 CachedAsyncImage(url: URL(string: photoURL)) { phase in
                     switch phase {
                     case .success(let image):
-                        if heroImageViewModel.selectedPhoto != photoURL {
+                        if detailImageViewModel.selectedPhoto != photoURL {
                             GeometryReader { let size = $0.size
                                 image
                                     .resizable()
@@ -56,7 +57,7 @@ struct DailyMemoryView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .contentShape(RoundedRectangle(cornerRadius: 8))
                                     .onTapGesture {
-                                        heroImageViewModel.pushView(
+                                        detailImageViewModel.pushView(
                                             with: photoURL,
                                             selection: memory.photos
                                         )
@@ -119,5 +120,5 @@ struct DailyMemoryView: View {
     HomeView()
         .environmentObject(AuthViewModel())
         .environmentObject(UserViewModel())
-        .environmentObject(HeroImageViewModel())
+        .environmentObject(DetailImageViewModel())
 }
