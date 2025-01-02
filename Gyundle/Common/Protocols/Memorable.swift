@@ -7,7 +7,10 @@
 
 import Foundation
 
-protocol Memorable {
-    var id: String { get }
+protocol Memorable: Codable {
+    var uid: String { get }
+    var day: String { get }
     var date: Date { get }
+    
+    static func defaultMemory() -> Self
 }
