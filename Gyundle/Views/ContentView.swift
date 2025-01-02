@@ -12,7 +12,9 @@ enum Tab {
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
+    @StateObject private var heroImageViewModel = HeroImageViewModel()
     @State private var selection: Tab = .homeView
+    
     
     var body: some View {
         ZStack {
@@ -28,7 +30,12 @@ struct ContentView: View {
             case .signUp:
                 SignUpView()
             }
+            
+            if heroImageViewModel.isPresented {
+                ImageDetailView()
+            }
         }
+        .environmentObject(heroImageViewModel)
     }
     
     @ViewBuilder

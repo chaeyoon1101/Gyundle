@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct DailyMemoryView: View {
-    var memory: DailyMemory
+    @EnvironmentObject private var heroImageViewModel: HeroImageViewModel
     
-    @State private var isShowingFullText: Bool = false
+    var memory: DailyMemory
     
     var body: some View {
         HeaderView()
@@ -42,18 +42,29 @@ struct DailyMemoryView: View {
     func PhotoGridView() -> some View {
         HStack(spacing: 4) {
             
-            ForEach(memory.photos, id: \.self) { photoUrl in
+            ForEach(memory.photos, id: \.self) { photoURL in
                 
-                CachedAsyncImage(url: URL(string: photoUrl)) { phase in
+                CachedAsyncImage(url: URL(string: photoURL)) { phase in
                     switch phase {
                     case .success(let image):
-                        GeometryReader { let size = $0.size
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: size.width, height: 120)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .contentShape(RoundedRectangle(cornerRadius: 8))
+                        if heroImageViewModel.selectedPhoto != photoURL {
+                            GeometryReader { let size = $0.size
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: size.width, height: 120)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .contentShape(RoundedRectangle(cornerRadius: 8))
+                                    .onTapGesture {
+                                        heroImageViewModel.pushView(
+                                            with: photoURL,
+                                            selection: memory.photos
+                                        )
+                                    }
+                            }
+                        } else {
+                            Color.clear
+                                .frame(height: 120)
                         }
                     case .empty:
                         LoadingView()
@@ -79,7 +90,7 @@ struct DailyMemoryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(4) 
+        .padding(4)
     }
     
     @ViewBuilder
@@ -108,4 +119,5 @@ struct DailyMemoryView: View {
     HomeView()
         .environmentObject(AuthViewModel())
         .environmentObject(UserViewModel())
+        .environmentObject(HeroImageViewModel())
 }

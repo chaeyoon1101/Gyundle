@@ -12,45 +12,49 @@ struct HomeView: View {
     
     var body: some View {
         ZStack {
-            Self.background(color: ColorConstant.bgPrimary)
             
-            ZStack {
+            ScrollView(.vertical, showsIndicators: false) {
                 
-                ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 24) {
+                    CalendarView()
+                        .environmentObject(calendarViewModel)
                     
-                    VStack(spacing: 24) {
-                        CalendarView()
-                            .environmentObject(calendarViewModel)
-                        
-                        let selectedDate = calendarViewModel.selectedDate
-                        
-                        if let dogWalkingMemory: DogWalkingMemory = memoryViewModel.getMemory(of: .dogWalking, from: selectedDate) {
-                            DogWalkingMemoryView(memory: dogWalkingMemory)
-                        }
-                        
-                        if let dailyMemory: DailyMemory = memoryViewModel.getMemory(of: .daily, from: selectedDate) {
-
-                            DailyMemoryView(memory: dailyMemory)
-                        }
+                    let selectedDate = calendarViewModel.selectedDate
+                    
+                    if let dogWalkingMemory: DogWalkingMemory = memoryViewModel.getMemory(of: .dogWalking, from: selectedDate) {
+                        DogWalkingMemoryView(memory: dogWalkingMemory)
                     }
+                    
+//                        if let dailyMemory: DailyMemory = memoryViewModel.getMemory(of: .daily, from: selectedDate) {
+
+                    let dailyMemory = DailyMemory(id: "31", date: Date(), text: "12월 31일 테스트\n2024년도 이제 하루 남았습니다.\n내년도 좋은 날들만 있으면 좋겠네요\n\n 그럼 다들 화이팅~~", photos: [
+                        "https://firebasestorage.googleapis.com:443/v0/b/gyundle.appspot.com/o/DailyMemoryPhotos%2F904F7D79-76AF-4BB2-991A-9B9D126AD05A.jpg?alt=media&token=8f5bf5cc-9440-471f-a99d-e21f88f7ebf8",
+                        
+                        "https://firebasestorage.googleapis.com:443/v0/b/gyundle.appspot.com/o/DailyMemoryPhotos%2FF4FAFABA-D0E3-4A78-8396-5E48E6251515.jpg?alt=media&token=d7ebe5f8-dbf8-4b21-8a8e-325a0b43d781",
+                        
+                        "https://firebasestorage.googleapis.com:443/v0/b/gyundle.appspot.com/o/DailyMemoryPhotos%2F64D625FB-80EE-4054-8D67-78D00857ED07.jpg?alt=media&token=09fc69e2-ee67-49a4-b3c4-1afbbacbe967"
+                        ])
+                        
+                    DailyMemoryView(memory: dailyMemory)
+//                        }
                 }
-                .safeAreaPadding(.top, getSafeAreaTop())
-                .blur(radius: showingMemorizeView ? 3 : 0)
-                .scrollClipDisabled()
-                
-                if showingMemorizeView {
-                    MemorizeView()
-                        .align(.bottom)
-                        .padding(.bottom, 120)
-                }
-                
-                MemorizeButton()
-                    .align(.bottom)
-                    .padding(.bottom, 24)
             }
-            .padding()
-            .ignoresSafeArea()
+            .safeAreaPadding(.top, getSafeAreaTop())
+            .blur(radius: showingMemorizeView ? 3 : 0)
+            .scrollClipDisabled()
+            
+            if showingMemorizeView {
+                MemorizeView()
+                    .align(.bottom)
+                    .padding(.bottom, 120)
+            }
+            
+            MemorizeButton()
+                .align(.bottom)
+                .padding(.bottom, 24)
         }
+        .padding()
+        .ignoresSafeArea()
         .fullScreenCover(isPresented: $isPresentedDailyMemorizeView) {
             DailyMemorizeView(
                 isPresented: $isPresentedDailyMemorizeView,
