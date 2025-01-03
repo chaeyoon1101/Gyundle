@@ -5,6 +5,8 @@ import KakaoSDKAuth
 
 @main
 struct GyundleApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject var authViewModel = AuthViewModel()
     @StateObject var userViewModel = UserViewModel()
     

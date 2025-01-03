@@ -7,7 +7,13 @@
 
 import SwiftUI
 
+@MainActor
 class DetailImageViewModel: ObservableObject {
+    // 모든 뷰 계층에서 최상단에서 보이게하기 위해 SceneDelegate를 사용함
+    // SceneDelegate와 View간의 데이터 공유를 위해 싱글톤으로 구현
+    static let shared = DetailImageViewModel()
+    private init() { }
+    
     // MARK: 디테일 뷰에서 어떤 이미지를 보여줄 건지를 담는 프로퍼티
     @Published var isPresented: Bool = false
     @Published var photoSelection: [String] = []
