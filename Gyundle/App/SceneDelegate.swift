@@ -22,9 +22,8 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate, ObservableObject {
     }
 
     func setupDetailImageOverlayWindow(in scene: UIWindowScene) {
-        let content = EmptyView()
+        let content = DetailImageView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .modifier(DetailImageViewModifier())
         
         let overlayViewController = UIHostingController(
             rootView: content
