@@ -28,8 +28,8 @@ class FirebaseManager {
     }
     
     
-    // MARK: Firestore DB
-    func uploadMemory<T: Codable & Memorable>(memory: T) async throws {
+    // MARK: Memory Data
+    func uploadMemory<T: Memorable>(memory: T) async throws {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
             throw AuthError.userNotFound
@@ -51,6 +51,19 @@ class FirebaseManager {
         )
     }
     
+    func deleteMemory<T: Memorable>(memory: T) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("로그인 된 유저 정보가 없음")
+            throw AuthError.userNotFound
+        }
+        
+        let userRef = db.collection("users").document(userID)
+        let memoriesRef = userRef
+                            .collection("memories")
+                            .document(memory.date.toYearMonth())
+        
+        try await memoriesRef.delete()
+    }
     
     func fetchMemories(from yearMonth: String) async throws -> Memory {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -70,6 +83,8 @@ class FirebaseManager {
     }
     
     
+    
+    // MARK: User Data
     func uploadUserInfo(user: User) async throws {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")

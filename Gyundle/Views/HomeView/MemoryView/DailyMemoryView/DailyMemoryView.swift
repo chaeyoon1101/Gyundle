@@ -12,11 +12,14 @@ struct DailyMemoryView: View {
             .padding(.bottom, -20)
         
         VStack {
-            PhotoGridView(photosURL: memory.photos)
-                .frame(height: 120)
-                .padding(4)
+            if !memory.photos.isEmpty {
+                PhotoGridView(photosURL: memory.photos)
+                    .frame(height: 120)
+                    .padding(4)
+            }
             
             MemoryContentView()
+                .padding(4)
         }
         .background(
             RoundedRectangle(cornerRadius: 8)

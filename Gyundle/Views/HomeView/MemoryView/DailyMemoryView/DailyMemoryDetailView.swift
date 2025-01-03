@@ -16,14 +16,15 @@ struct DailyMemoryDetailView: View {
     
     var body: some View {
         NavigationStack {
-            
             VStack {
-                
                 ScrollView(.vertical) {
+                    
                     if let memory = memoryViewModel.selectedMemory as? DailyMemory {
                         VStack {
-                            PhotoGridView(photosURL: memory.photos)
-                                .frame(height: getScreenWidth() / CGFloat(memory.photos.count) - 4)
+                            if !memory.photos.isEmpty {
+                                PhotoGridView(photosURL: memory.photos)
+                                    .frame(height: getScreenWidth() / CGFloat(memory.photos.count) - 4)
+                            }
                             
                             Text(memory.text)
                                 .align(.leading)
@@ -38,7 +39,7 @@ struct DailyMemoryDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        
+                        isPresented = false
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundStyle(ColorConstant.fgSecondary)
@@ -73,7 +74,9 @@ struct DailyMemoryDetailView: View {
                 }
                 
                 Button("삭제하기", role: .destructive) {
-                    print("삭제하기")
+                    Task {
+                        await memoryViewModel.deleteMemory()
+                    }
                     isPresented = false
                 }
             },
