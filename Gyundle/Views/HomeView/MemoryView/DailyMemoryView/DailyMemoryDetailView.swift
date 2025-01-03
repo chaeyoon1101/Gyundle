@@ -12,10 +12,93 @@ struct DailyMemoryDetailView: View {
     
     @Binding var isPresented: Bool
     
+    @State private var showDeleteConfirmation: Bool = false
+    
     var body: some View {
-        Text("Hello, World!")
-        
-        
+        NavigationStack {
+            
+            VStack {
+                
+                ScrollView(.vertical) {
+                    if let memory = memoryViewModel.selectedMemory as? DailyMemory {
+                        VStack {
+                            PhotoGridView(photosURL: memory.photos)
+                                .frame(height: getScreenWidth() / CGFloat(memory.photos.count) - 4)
+                            
+                            Text(memory.text)
+                                .align(.leading)
+                                .padding()
+                        }
+                        .navigationTitle(memory.date.formatting("M월 d일의 기억"))
+                        .navigationBarTitleDisplayMode(.inline)
+                    }
+                }
+                .padding(4)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundStyle(ColorConstant.fgSecondary)
+                            .fontWeight(.bold)
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    ExtraButton()
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func ExtraButton() -> some View {
+        Menu {
+            EditButton()
+            
+            DeleteButton()
+        } label: {
+            Image(systemName: "ellipsis")
+                .foregroundStyle(ColorConstant.fgPrimary)
+                .fontWeight(.bold)
+        }
+        .confirmationDialog(
+            "삭제 확인 알림",
+            isPresented: $showDeleteConfirmation,
+            actions: {
+                Button("취소", role: .cancel) {
+                    print("취소")
+                }
+                
+                Button("삭제하기", role: .destructive) {
+                    print("삭제하기")
+                    isPresented = false
+                }
+            },
+            message: {
+                Text("이 기억을 삭제하시겠습니까? 되돌릴 수 없습니다.")
+            }
+        )
+    }
+    
+    @ViewBuilder
+    func DeleteButton() -> some View {
+        Button(role: .destructive) {
+            showDeleteConfirmation = true
+        } label: {
+            Label("삭제", systemImage: "trash")
+        }
+    }
+    
+    @ViewBuilder
+    func EditButton() -> some View {
+        Button {
+            
+        } label: {
+            Label("편집", systemImage: "pencil")
+        }
     }
 }
 
@@ -23,5 +106,4 @@ struct DailyMemoryDetailView: View {
     HomeView()
         .environmentObject(AuthViewModel())
         .environmentObject(UserViewModel())
-        .environmentObject(DetailImageViewModel())
 }

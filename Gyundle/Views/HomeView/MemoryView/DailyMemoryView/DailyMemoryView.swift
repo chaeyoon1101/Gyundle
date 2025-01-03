@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct DailyMemoryView: View {
-    @EnvironmentObject private var detailImageViewModel: DetailImageViewModel
+    @ObservedObject private var detailImageViewModel = DetailImageViewModel.shared
     @EnvironmentObject private var memoryViewModel: MemoryViewModel
     
+    @State private var isDetailViewPresented: Bool = false
     var memory: DailyMemory
     
     var body: some View {
@@ -11,7 +12,9 @@ struct DailyMemoryView: View {
             .padding(.bottom, -20)
         
         VStack {
-            PhotoGridView()
+            PhotoGridView(photosURL: memory.photos)
+                .frame(height: 120)
+                .padding(4)
             
             MemoryContentView()
         }
@@ -21,7 +24,14 @@ struct DailyMemoryView: View {
                     ColorConstant.bgContent
                         .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
                 )
+                .onTapGesture {
+                    memoryViewModel.selectedMemory = memory
+                    isDetailViewPresented = true
+                }
         )
+        .sheet(isPresented: $isDetailViewPresented) {
+            DailyMemoryDetailView(isPresented: $isDetailViewPresented)
+        }
     }
     
     @ViewBuilder
@@ -37,61 +47,6 @@ struct DailyMemoryView: View {
             Spacer()
         }
         .padding(.leading)
-    }
-    
-    @ViewBuilder
-    func PhotoGridView() -> some View {
-        HStack(spacing: 4) {
-            
-            ForEach(memory.photos, id: \.self) { photoURL in
-                
-                CachedAsyncImage(url: URL(string: photoURL)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        if detailImageViewModel.selectedPhoto != photoURL {
-                            GeometryReader { let size = $0.size
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: size.width, height: 120)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .contentShape(RoundedRectangle(cornerRadius: 8))
-                                    .onTapGesture {
-                                        detailImageViewModel.pushView(
-                                            with: photoURL,
-                                            selection: memory.photos
-                                        )
-                                    }
-                            }
-                        } else {
-                            Color.clear
-                                .frame(height: 120)
-                        }
-                    case .empty:
-                        LoadingView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(ColorConstant.bgSecondary)
-                            )
-                    case .failure(_ ):
-                        Image(systemName: "x.circle")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        
-                    @unknown default:
-                        LoadingView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(ColorConstant.bgSecondary)
-                            )
-                    }
-                }
-                .frame(height: 120)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(4)
     }
     
     @ViewBuilder
@@ -120,5 +75,4 @@ struct DailyMemoryView: View {
     HomeView()
         .environmentObject(AuthViewModel())
         .environmentObject(UserViewModel())
-        .environmentObject(DetailImageViewModel())
 }
