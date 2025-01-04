@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DailyMemoryView: View {
     @ObservedObject private var detailImageViewModel = DetailImageViewModel.shared
-    @EnvironmentObject private var memoryViewModel: MemoryViewModel
+    @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     
     @State private var isDetailViewPresented: Bool = false
     var memory: DailyMemory
@@ -28,7 +28,7 @@ struct DailyMemoryView: View {
                         .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
                 )
                 .onTapGesture {
-                    memoryViewModel.selectedMemory = memory
+                    dailyMemoryViewModel.selectedMemory = memory
                     isDetailViewPresented = true
                 }
         )

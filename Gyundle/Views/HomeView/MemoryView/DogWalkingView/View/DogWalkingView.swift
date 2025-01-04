@@ -2,7 +2,6 @@ import SwiftUI
 
 struct DogWalkingView: View {
     @EnvironmentObject var calendarViewModel: CalendarViewModel
-    @EnvironmentObject var memoryViewModel: MemoryViewModel
     
     var body: some View {
         GeometryReader { geometry in

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CalendarView: View {
     @EnvironmentObject private var calendarViewModel: CalendarViewModel
-    @EnvironmentObject private var memoryViewModel: MemoryViewModel
+    @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     
     var body: some View {
         VStack {
@@ -12,11 +12,11 @@ struct CalendarView: View {
         }
         .padding(.horizontal, 4)
         .task {
-            await memoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
+            await dailyMemoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
         }
         .onChange(of: calendarViewModel.currentPageDate) { _, newValue in
             Task {
-                await memoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
+                await dailyMemoryViewModel.fetchMemories(date: calendarViewModel.currentPageDate)
             }
         }
     }
@@ -24,5 +24,5 @@ struct CalendarView: View {
 #Preview {
     HomeView()
         .environmentObject(UserViewModel())
-        .environmentObject(MemoryViewModel())
+        .environmentObject(DailyMemoryViewModel())
 }

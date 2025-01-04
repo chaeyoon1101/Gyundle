@@ -2,7 +2,6 @@ import SwiftUI
 
 struct WalkingMemorizeView: View {
     @EnvironmentObject private var calendarViewModel: CalendarViewModel
-    @EnvironmentObject private var memoryViewModel: MemoryViewModel
     
 //    @StateObject private var imageViewModel = PhotoViewModel()
     @StateObject var locationDataManager = LocationDataManager()
@@ -61,11 +60,11 @@ struct WalkingMemorizeView: View {
     
     private func uploadMemory() async {
         let date = calendarViewModel.selectedDate
-        let id = date.toDay()
+        let day = date.asDay()
         let endTime = Date()
         let coordinates = locationDataManager.coordinates.map { $0.toCoordinate() }
         
-        let memory = DogWalkingMemory(id: id, date: date, startTime: startTime, endTime: endTime, coordinates: coordinates)
+        let memory = DogWalkingMemory(day: day, date: date, startTime: startTime, endTime: endTime, coordinates: coordinates)
         
 //        memoryViewModel.uploadMemory(memory: memory)
         
@@ -76,5 +75,5 @@ struct WalkingMemorizeView: View {
 #Preview {
     WalkingMemorizeView(isPresented: .constant(true))
         .environmentObject(CalendarViewModel())
-        .environmentObject(MemoryViewModel())
+        .environmentObject(DailyMemoryViewModel())
 }

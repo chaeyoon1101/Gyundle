@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DailyMemoryDetailView: View {
-    @EnvironmentObject var memoryViewModel: MemoryViewModel
+    @EnvironmentObject var dailyMemoryViewModel: DailyMemoryViewModel
     
     @Binding var isPresented: Bool
     
@@ -19,7 +19,7 @@ struct DailyMemoryDetailView: View {
             VStack {
                 ScrollView(.vertical) {
                     
-                    if let memory = memoryViewModel.selectedMemory as? DailyMemory {
+                    if let memory = dailyMemoryViewModel.selectedMemory as? DailyMemory {
                         VStack {
                             if !memory.photos.isEmpty {
                                 PhotoGridView(photosURL: memory.photos)
@@ -75,7 +75,7 @@ struct DailyMemoryDetailView: View {
                 
                 Button("삭제하기", role: .destructive) {
                     Task {
-                        await memoryViewModel.deleteMemory()
+                        await dailyMemoryViewModel.deleteMemory()
                     }
                     isPresented = false
                 }
@@ -98,7 +98,8 @@ struct DailyMemoryDetailView: View {
     @ViewBuilder
     func EditButton() -> some View {
         Button {
-            
+            isPresented = false
+            dailyMemoryViewModel.isPresentedMemorizeView = true
         } label: {
             Label("편집", systemImage: "pencil")
         }

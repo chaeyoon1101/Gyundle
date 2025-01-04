@@ -2,12 +2,11 @@ import SwiftUI
 import PhotosUI
 
 struct DailyMemorizeView: View {
-    @EnvironmentObject private var memoryViewModel: MemoryViewModel
+    @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     @StateObject private var photosPickerViewModel = PhotosPickerViewModel()
     
-    @Binding var isPresented: Bool
-    
     @State var text: String = ""
+    
     let date: Date
     
     var body: some View {
@@ -18,7 +17,19 @@ struct DailyMemorizeView: View {
                 ScrollView(.vertical) {
                     PhotosView()
                     
-                    DailyMemoryTextEditor(enteredText: $text)
+                    DailyMemoryTextEditor(
+                        enteredText: Binding(
+                            get: {
+                                (dailyMemoryViewModel.selectedMemory as? DailyMemory)?.text ?? ""
+                            },
+                            set: { newValue in
+                                if var dailyMemory = dailyMemoryViewModel.selectedMemory as? DailyMemory {
+                                    dailyMemory.text = newValue
+                                    dailyMemoryViewModel.selectedMemory = dailyMemory
+                                }
+                            }
+                        )
+                    )
                 }
                 
                 BottomBar()
@@ -29,7 +40,7 @@ struct DailyMemorizeView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        isPresented = false
+                        dailyMemoryViewModel.isPresentedMemorizeView = false
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundStyle(ColorConstant.fgPrimary)
@@ -38,24 +49,7 @@ struct DailyMemorizeView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        Task {
-                            do {
-                                let photoUrls = try await photosPickerViewModel.uploadPhoto(to: .dailyMemory)
-                                
-                                let memory = DailyMemory(
-                                    id: date.toDay(),
-                                    date: Date(),
-                                    text: text,
-                                    photos: photoUrls
-                                )
-                                
-                                try await memoryViewModel.uploadMemory(memory: memory)
-                            } catch {
-                                print(error.localizedDescription)
-                            }
-                            
-                            isPresented.toggle()
-                        }
+                        uploadMemory()
                     } label: {
                         if photosPickerViewModel.isUploading {
                             ProgressView()
@@ -106,10 +100,31 @@ struct DailyMemorizeView: View {
         .frame(height: 48)
         .background(ColorConstant.bgSecondary)
     }
+    
+//    private func 
+    
+    private func uploadMemory() {
+        Task {
+            let photosURL = try await photosPickerViewModel.uploadPhoto(to: .dailyMemory)
+            
+            let uploadMemory = DailyMemory(
+                day: date.asDay(),
+                date: date,
+                text: text,
+                photos: photosURL
+            )
+            
+            dailyMemoryViewModel.selectedMemory = uploadMemory
+            
+            await dailyMemoryViewModel.uploadMemory()
+            
+            dailyMemoryViewModel.isPresentedMemorizeView = false
+        }
+    }
 }
 
 #Preview {
     HomeView()
         .environmentObject(UserViewModel())
-        .environmentObject(MemoryViewModel())
+        .environmentObject(DailyMemoryViewModel())
 }

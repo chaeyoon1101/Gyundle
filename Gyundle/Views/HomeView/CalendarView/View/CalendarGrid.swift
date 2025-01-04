@@ -134,5 +134,5 @@ extension CalendarGrid {
 #Preview {
     HomeView()
         .environmentObject(UserViewModel())
-        .environmentObject(MemoryViewModel())
+        .environmentObject(DailyMemoryViewModel())
 }
