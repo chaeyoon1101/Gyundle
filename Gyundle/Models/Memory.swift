@@ -2,7 +2,7 @@ import Foundation
 
 struct Memory: Codable {
     var dailyMemories: [DailyMemory]?
-    var walkingMemories: [DogWalkingMemory]?
+    var dogWalkingMemories: [DogWalkingMemory]?
 }
 
 struct DailyMemory: Memorable {
@@ -14,10 +14,10 @@ struct DailyMemory: Memorable {
  
     static func defaultMemory() -> Self {
         return DailyMemory(
-            day: "",
+            day: .init(),
             date: .init(),
-            text: "",
-            photos: []
+            text: .init(),
+            photos: .init()
         )
     }
 }
@@ -32,11 +32,11 @@ struct DogWalkingMemory: Memorable {
     
     static func defaultMemory() -> Self {
         return DogWalkingMemory(
-            day: "",
+            day: .init(),
             date: .init(),
             startTime: .init(),
             endTime: .init(),
-            coordinates: []
+            coordinates: .init()
         )
     }
 }

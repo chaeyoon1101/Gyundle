@@ -62,8 +62,33 @@ class FirebaseManager {
                             .collection("memories")
                             .document(memory.date.toYearMonth())
         
-        try await memoriesRef.delete()
+        let memoriesDocument = try await memoriesRef.getDocument()
+        
+        let memories = try memoriesDocument.data(as: Memory.self)
+        
+        
+        // 삭제하려는 데이터를 제외하고 다시 업데이트
+        let filteredMemory: Memory = switch memory.self {
+        case is DailyMemory:
+             Memory(
+                dailyMemories: memories.dailyMemories?.filter( { $0.uid != memory.uid } ),
+                dogWalkingMemories: memories.dogWalkingMemories
+            )
+        case is DogWalkingMemory:
+            Memory(
+                dailyMemories: memories.dailyMemories,
+                dogWalkingMemories: memories.dogWalkingMemories?.filter( { $0.uid != memory.uid } )
+            )
+        default:
+            throw FirebaseError.unknownError
+        }
+        
+        let encoder = Firestore.Encoder()
+        let encodedData = try encoder.encode(filteredMemory)
+        
+        try await memoriesRef.updateData(encodedData)
     }
+    
     
     func fetchMemories(from yearMonth: String) async throws -> Memory {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -143,4 +168,9 @@ class FirebaseManager {
     }
     
 
+}
+
+struct Test: Codable {
+    var id:  String
+    var value: String
 }
