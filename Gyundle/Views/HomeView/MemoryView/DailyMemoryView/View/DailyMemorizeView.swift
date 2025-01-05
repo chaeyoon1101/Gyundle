@@ -5,8 +5,6 @@ struct DailyMemorizeView: View {
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     @StateObject private var photosPickerViewModel = PhotosPickerViewModel()
     
-    @State var text: String = ""
-    
     let date: Date
     
     var body: some View {
@@ -20,13 +18,10 @@ struct DailyMemorizeView: View {
                     DailyMemoryTextEditor(
                         enteredText: Binding(
                             get: {
-                                (dailyMemoryViewModel.selectedMemory as? DailyMemory)?.text ?? ""
+                                dailyMemoryViewModel.selectedMemory?.text ?? ""
                             },
                             set: { newValue in
-                                if var dailyMemory = dailyMemoryViewModel.selectedMemory as? DailyMemory {
-                                    dailyMemory.text = newValue
-                                    dailyMemoryViewModel.selectedMemory = dailyMemory
-                                }
+                                dailyMemoryViewModel.selectedMemory?.text = newValue
                             }
                         )
                     )
@@ -60,19 +55,61 @@ struct DailyMemorizeView: View {
                     }
                 }
             }
+            .onAppear {
+                //
+                if dailyMemoryViewModel.selectedMemory?.photos.isEmpty == false {
+                    Task {
+                        await photosPickerViewModel.loadImage(from: dailyMemoryViewModel.selectedMemory?.photos)
+                    }
+                }
+            }
         }
         .disabled(photosPickerViewModel.isUploading)
     }
     
     @ViewBuilder
     private func PhotosView() -> some View {
-        if !photosPickerViewModel.selectedPhotos.isEmpty {
+        let selectedPhotos = photosPickerViewModel.selectedPhotos
+        let selectedPhotosURL = dailyMemoryViewModel.selectedMemory?.photos ?? []
+        
+        if selectedPhotos.count >= selectedPhotosURL.count {
             HStack(spacing: 4) {
                 ForEach(0..<photosPickerViewModel.selectedPhotos.count, id: \.self) { index in
                     DailyMemoryPhoto(
                         photos: photosPickerViewModel.selectedPhotos,
                         index: index
                     )
+                }
+            }
+        } else {
+            // URL 데이터를 UIImage로 변환 중인 상태라면 placeholder 띄우기
+            
+            let screenWidth = getScreenWidth()
+            let photoCount = Double(selectedPhotosURL.count)
+            
+            HStack(spacing: 4) {
+                
+                ForEach(0..<selectedPhotosURL.count, id: \.self) { index in
+                    
+                    if let photo = photosPickerViewModel.selectedPhotos[safe: index] {
+                        Image(uiImage: photo)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(
+                                width: screenWidth / photoCount - 4,
+                                height: screenWidth / photoCount - 4
+                            )
+                            .frame(maxHeight: screenWidth / 2)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    } else {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(ColorConstant.bgSecondary)
+                            .frame(
+                                width: screenWidth / photoCount - 4,
+                                height: screenWidth / photoCount - 4
+                            )
+                            .frame(maxHeight: screenWidth / 2)
+                    }
                 }
             }
         }
@@ -101,25 +138,57 @@ struct DailyMemorizeView: View {
         .background(ColorConstant.bgSecondary)
     }
     
-//    private func 
-    
     private func uploadMemory() {
         Task {
-            let photosURL = try await photosPickerViewModel.uploadPhoto(to: .dailyMemory)
+            await uploadPhoto()
+            dailyMemoryViewModel.selectedMemory?.day = date.toDay()
+            dailyMemoryViewModel.selectedMemory?.date = calculateUploadDate()
             
-            let uploadMemory = DailyMemory(
-                day: date.asDay(),
-                date: date,
-                text: text,
-                photos: photosURL
-            )
-            
-            dailyMemoryViewModel.selectedMemory = uploadMemory
-            
-            await dailyMemoryViewModel.uploadMemory()
-            
-            dailyMemoryViewModel.isPresentedMemorizeView = false
+            if isEditing() {
+                await dailyMemoryViewModel.updateMemory()
+            } else {
+                await dailyMemoryViewModel.uploadMemory()
+            }
         }
+    }
+    
+    private func uploadPhoto() async {
+        let photosURL = await photosPickerViewModel.uploadPhoto(to: .dailyMemory)
+
+        dailyMemoryViewModel.selectedMemory?.photos = photosURL
+    }
+    
+    
+    // 작성하고있는 데이터의 uuid가 이미 존재한다면 편집 중 그렇지 않으면 새로 작성 중
+    private func isEditing() -> Bool {
+        let key = date.toYearMonth()
+         
+        let containsSelectedMemory = dailyMemoryViewModel.dailyMemories[key]?.contains(
+            where: { $0.uid == dailyMemoryViewModel.selectedMemory?.uid }
+        )
+        
+        return containsSelectedMemory ?? false
+    }
+    
+    // 24일의 기록을 25일에 작성 할수도 있기 때문에
+    // 선택된 날짜와 작성 당시 시간분초를 합쳐서 저장
+    private func calculateUploadDate() -> Date {
+        let calendar = Calendar.current
+        
+        let selectedDateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        let uploadDateComponents = calendar.dateComponents([.hour, .minute, .second], from: Date())
+        
+        var mergedDateComponents = DateComponents()
+        mergedDateComponents.year = selectedDateComponents.year
+        mergedDateComponents.month = selectedDateComponents.month
+        mergedDateComponents.day = selectedDateComponents.day
+        mergedDateComponents.hour = uploadDateComponents.hour
+        mergedDateComponents.minute = uploadDateComponents.minute
+        mergedDateComponents.second = uploadDateComponents.second
+        
+        
+        return calendar.date(from: mergedDateComponents) ?? Date()
+        
     }
 }
 

@@ -12,16 +12,9 @@ struct DailyMemoryTextEditor: View {
     @FocusState var focused: Bool
     
     var body: some View {
-        ZStack(alignment: .leading) {
-            if enteredText.isEmpty {
-                VStack {
-                    Text("오늘을 기억을 기록해보세요!")
-                        .padding(.top, 10)
-                        .padding(.leading, 6)
-                    Spacer()
-                }
+        ZStack(alignment: .topLeading) {
+            PlaceholderView()
                 .padding()
-            }
             
             TextEditor(text: $enteredText)
                 .opacity(enteredText.isEmpty ? 0.5 : 1)
@@ -30,6 +23,15 @@ struct DailyMemoryTextEditor: View {
         }
         .onAppear {
             focused = true
+        }
+    }
+    
+    @ViewBuilder func PlaceholderView() -> some View {
+        VStack {
+            Text("오늘을 기억을 기록해보세요!")
+                .padding(.top, 10)
+                .padding(.leading, 6)
+            Spacer()
         }
     }
 }

@@ -89,8 +89,44 @@ class FirebaseManager {
         try await memoriesRef.updateData(encodedData)
     }
     
-//    func updateMemory<T: Memorable>(_ memory: T) async
-    
+    func updateMemory<T: Memorable>(_ memory: T) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("로그인 된 유저 정보가 없음")
+            throw AuthError.userNotFound
+        }
+        
+        let userRef = db.collection("users").document(userID)
+        let memoriesRef = userRef
+                            .collection("memories")
+                            .document(memory.date.toYearMonth())
+        
+        
+        let memoriesDocument = try await memoriesRef.getDocument()
+        
+        let memories = try memoriesDocument.data(as: Memory.self)
+        
+        // 기존 데이터에서 업데이트할 데이터를 찾아서 값을 변경한 후 DB에 업데이트
+        let updatedMemory: Memory = switch memory.self {
+        case is DailyMemory:
+            Memory(
+                dailyMemories: memories.dailyMemories?.map( { $0.uid == memory.uid ? memory as! DailyMemory : $0 } ),
+                dogWalkingMemories: memories.dogWalkingMemories
+            )
+        case is DogWalkingMemory:
+            Memory(
+                dailyMemories: memories.dailyMemories,
+                dogWalkingMemories: memories.dogWalkingMemories?.map( { $0.uid == memory.uid ? memory as! DogWalkingMemory : $0 } )
+            )
+        default:
+            throw FirebaseError.unknownError
+        }
+        
+        let encoder = Firestore.Encoder()
+        let encodedData = try encoder.encode(updatedMemory)
+        
+        print(updatedMemory)
+        try await memoriesRef.updateData(encodedData)
+    }
     
     func fetchMemories(from yearMonth: String) async throws -> Memory {
         guard let userID = Auth.auth().currentUser?.uid else {

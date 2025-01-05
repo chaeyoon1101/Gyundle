@@ -28,14 +28,17 @@ class DailyMemoryViewModel: ObservableObject {
         }
         
         do {
-            try await FirebaseManager.shared.uploadMemory(memory: memory)
+            try await FirebaseManager.shared.uploadMemory(memory)
             
             print("Memory 업로드 성공")
+            await MainActor.run {
+                isPresentedMemorizeView = false
+            }
         } catch {
             print("Memory 업로드 실패:", error.localizedDescription)
         }
         
-        await fetchMemories(date: memory.date)
+        await fetchMemories(from: memory.date)
         await resetSelectedMemory()
     }
     
@@ -46,34 +49,47 @@ class DailyMemoryViewModel: ObservableObject {
         }
         
         do {
-            try await FirebaseManager.shared.deleteMemory(memory: memory)
+            try await FirebaseManager.shared.deleteMemory(memory)
             
-            await MainActor.run {
-                let key = convertToKey(from: memory.date)
-                dailyMemories[key]?.removeAll(where: { $0.uid == memory.uid } )
-            }
+//            await MainActor.run {
+//                let key = convertToKey(from: memory.date)
+//                dailyMemories[key]?.removeAll(where: { $0.uid == memory.uid } )
+//            }
             print("Memory 삭제 성공")
         } catch {
             print("Memory 삭제 실패:", error.localizedDescription)
         }
         
-        await fetchMemories(date: memory.date)
+        await fetchMemories(from: memory.date)
         await resetSelectedMemory()
     }
     
-    
-    // 선택한 날짜의 데이터를 가져오기
-    func getMemory(from date: Date) -> DailyMemory? {
-        let key = convertToKey(from: date)
-        
-        let dailyMemory = dailyMemories[key]?.first { memory in
-            memory.day == date.toDay()
+    func updateMemory() async {
+        guard let memory = selectedMemory else {
+            print("Selected Memory가 존재하지 않음")
+            return
         }
         
-        return dailyMemory
+        do {
+            try await FirebaseManager.shared.updateMemory(memory)
+            
+            await MainActor.run {
+                isPresentedMemorizeView = false
+            }
+//            await MainActor.run {
+//                let key = convertToKey(from: memory.date)
+//                dailyMemories[key] = dailyMemories[key]?.map( { $0.uid == memory.uid ? memory : $0 } )
+//            }
+            print("Memory 삭제 성공")
+        } catch {
+            print("Memory 삭제 실패:", error.localizedDescription)
+        }
+        
+        await fetchMemories(from: memory.date)
+        await resetSelectedMemory()
     }
     
-    func fetchMemories(date: Date) async {
+    func fetchMemories(from date: Date) async {
         let key = convertToKey(from: date)
         
         do {
@@ -87,6 +103,17 @@ class DailyMemoryViewModel: ObservableObject {
         } catch {
             print("memory fetch 실패: ", error)
         }
+    }
+    
+    // 선택한 날짜의 데이터를 가져오기
+    func getMemory(from date: Date) -> DailyMemory? {
+        let key = convertToKey(from: date)
+        
+        let dailyMemory = dailyMemories[key]?.first { memory in
+            memory.day == date.toDay()
+        }
+        
+        return dailyMemory
     }
     
     private func convertToKey(from date: Date) -> String {

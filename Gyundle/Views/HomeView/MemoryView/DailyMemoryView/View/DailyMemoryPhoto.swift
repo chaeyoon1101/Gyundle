@@ -5,13 +5,11 @@ struct DailyMemoryPhoto: View {
     var index: Int
     
     var body: some View {
-        if photos.count > index {
+        if let photo = photos[safe: index] {
             let screenWidth = getScreenWidth()
             let photoCount = Double(photos.count)
             
-            let photo = Image(uiImage: photos[index])
-            
-            photo
+            Image(uiImage: photo)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(
@@ -27,5 +25,4 @@ struct DailyMemoryPhoto: View {
 #Preview {
     HomeView()
         .environmentObject(UserViewModel())
-        .environmentObject(MemoryViewModel())
 }

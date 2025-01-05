@@ -26,7 +26,7 @@ class PhotosPickerViewModel: ObservableObject {
     }
     @Published var selectedPhotos: [UIImage] = []
     
-    func uploadPhoto(to storage: PhotoStorage) async throws -> [String] {
+    func uploadPhoto(to storage: PhotoStorage) async -> [String] {
         await MainActor.run {
             isUploading = true
         }
@@ -35,8 +35,39 @@ class PhotosPickerViewModel: ObservableObject {
             photo.jpegData(compressionQuality: 0.8)
         }
         
-        let downloadUrls = try await FirebaseManager.shared.uploadPhoto(with: photoDatas, to: storage.folderName)
-        return downloadUrls
+        do {
+            let downloadUrls = try await FirebaseManager.shared.uploadPhoto(with: photoDatas, to: storage.folderName)
+            
+            await MainActor.run {
+                isUploading = false
+            }
+            return downloadUrls
+        } catch {
+            print("사진 업로드 실패:", error.localizedDescription)
+            
+            await MainActor.run {
+                isUploading = false
+            }
+            return []
+        }
+    }
+    
+    func loadImage(from photosURL: [String]?) async {
+        for photoURL in photosURL ?? [] {
+            guard let url = URL(string: photoURL) else { continue }
+            
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                
+                if let uiImage = UIImage(data: data) {
+                    await MainActor.run {
+                        selectedPhotos.append(uiImage)
+                    }
+                }
+            } catch {
+                print("(\(url.absoluteString))이미지 로드 실패:", error.localizedDescription)
+            }
+        }
     }
 }
 
@@ -65,7 +96,9 @@ extension PhotosPickerViewModel {
         }
         
         await MainActor.run {
-            selectedPhotos = photos
+            withAnimation {
+                selectedPhotos = photos
+            }
         }
     }
 }
