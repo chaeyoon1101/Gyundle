@@ -35,7 +35,7 @@ final class PhotoAttachment {
             if let itemIdentifier = photoPickerItem?.itemIdentifier,
                let url = URL(string: itemIdentifier) {
                 let (data, _) = try await URLSession.shared.data(from: url)
-                print(data)
+
                 if let uiImage = UIImage(data: data) {
                     return Image(uiImage: uiImage)
                 }

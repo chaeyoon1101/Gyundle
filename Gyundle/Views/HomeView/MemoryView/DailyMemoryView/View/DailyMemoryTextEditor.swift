@@ -21,7 +21,7 @@ struct DailyMemoryTextEditor: View {
                 .scrollContentBackground(.hidden)
                 .padding()
                 .focused(isFocused)
-            
+                .scrollDisabled(true)
         }
     }
     
@@ -36,8 +36,4 @@ struct DailyMemoryTextEditor: View {
         }
 
     }
-}
-
-#Preview {
-//    DailyMemoryTextEditor(enteredText: .constant(""))
 }

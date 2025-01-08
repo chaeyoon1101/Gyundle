@@ -40,6 +40,8 @@ struct DailyMemorizeView: View {
                         )
                     )
                 }
+                .safeAreaPadding(.bottom, 100)
+                .onTapGesture { isFocused = true }
                 .scrollDismissesKeyboard(.interactively)
                 
                 PhotosPickerView()
