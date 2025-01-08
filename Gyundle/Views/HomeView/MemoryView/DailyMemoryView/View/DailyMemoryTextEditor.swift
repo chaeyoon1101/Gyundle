@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DailyMemoryTextEditor: View {
     @Binding var enteredText: String
-    @FocusState var focused: Bool
+    @Binding var isFocused: FocusState<Bool>.Binding
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -18,24 +18,26 @@ struct DailyMemoryTextEditor: View {
             
             TextEditor(text: $enteredText)
                 .opacity(enteredText.isEmpty ? 0.5 : 1)
+                .scrollContentBackground(.hidden)
                 .padding()
-                .focused($focused)
-        }
-        .onAppear {
-            focused = true
+                .focused(isFocused)
+            
         }
     }
     
     @ViewBuilder func PlaceholderView() -> some View {
-        VStack {
-            Text("오늘을 기억을 기록해보세요!")
-                .padding(.top, 10)
-                .padding(.leading, 6)
-            Spacer()
+        if enteredText.isEmpty {
+            VStack {
+                Text("오늘을 기억을 기록해보세요!")
+                    .padding(.top, 10)
+                    .padding(.leading, 6)
+                Spacer()
+            }
         }
+
     }
 }
 
 #Preview {
-    DailyMemoryTextEditor(enteredText: .constant(""))
+//    DailyMemoryTextEditor(enteredText: .constant(""))
 }

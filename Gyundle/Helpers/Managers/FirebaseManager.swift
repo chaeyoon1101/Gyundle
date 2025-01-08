@@ -187,25 +187,17 @@ class FirebaseManager {
     
     
     // MARK: Firebase Storage 이미지 저장
-    func uploadPhoto(with datas: [Data], to folderName: String) async throws -> [String] {
+    func uploadPhoto(with data: Data, to folderName: String) async throws -> String {
         let storage = Storage.storage()
         let storageRef = storage.reference()
         
-        var downloadUrls: [String] = []
+        let photoRef = storageRef.child("\(folderName)/\(UUID().uuidString).jpg")
         
-        for data in datas {
-            let photoRef = storageRef.child("\(folderName)/\(UUID().uuidString).jpg")
-            
-            _ = try await photoRef.putDataAsync(data)
-            
-            let downloadURL = try await photoRef.downloadURL()
-            downloadUrls.append(downloadURL.absoluteString)
-        }
+        _ = try await photoRef.putDataAsync(data)
         
-        return downloadUrls
+        let downloadURL = try await photoRef.downloadURL()
+        return downloadURL.absoluteString
     }
-    
-
 }
 
 struct Test: Codable {

@@ -4,6 +4,12 @@ import PhotosUI
 struct DailyMemorizeView: View {
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     @StateObject private var photosPickerViewModel = PhotosPickerViewModel()
+    @StateObject private var keyboardResponder = KeyboardResponder()
+    
+    @FocusState var isFocused: Bool
+    
+    // ToolbarItemGroup(placement: .keyboard)가 간혈적으로 나타나지 않는 버그를 위한 프로퍼티
+    @State var disabled: Bool = true
     
     let date: Date
     
@@ -23,16 +29,42 @@ struct DailyMemorizeView: View {
                             set: { newValue in
                                 dailyMemoryViewModel.selectedMemory?.text = newValue
                             }
+                        ),
+                        isFocused: Binding(
+                            get: {
+                                $isFocused
+                            },
+                            set: { newValue in
+                                isFocused = newValue.wrappedValue
+                            }
                         )
                     )
                 }
+                .scrollDismissesKeyboard(.interactively)
                 
-                BottomBar()
+                PhotosPickerView()
+                    .disabled(true)
+                    .padding(.horizontal, -4)
             }
             .padding(.horizontal, 4)
-            .navigationTitle("\(date.formatting("M월 d일"))의 기억")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: keyboardResponder.isVisible ? .keyboard : .bottomBar) {
+                    HStack {
+                        Button {
+                            hideKeyboard()
+                            photosPickerViewModel.showPhotosPicker.toggle()
+                        } label: {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24)
+                        }
+                    }
+                    .foregroundStyle(.primary)
+
+                    Spacer()
+                }
+                
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dailyMemoryViewModel.isPresentedMemorizeView = false
@@ -55,87 +87,63 @@ struct DailyMemorizeView: View {
                     }
                 }
             }
-            .onAppear {
-                //
-                if dailyMemoryViewModel.selectedMemory?.photos.isEmpty == false {
-                    Task {
-                        await photosPickerViewModel.loadImage(from: dailyMemoryViewModel.selectedMemory?.photos)
-                    }
-                }
-            }
+            .toolbarBackground(.visible, for: .bottomBar)
+            .navigationTitle("\(date.formatting("M월 d일"))의 기억")
+            .navigationBarTitleDisplayMode(.inline)
+            .ignoresSafeArea(.container, edges: .bottom)
         }
         .disabled(photosPickerViewModel.isUploading)
+        .disabled(disabled) /// View를 inActive 상태로 만들기 위함 0.3초 후에 enable
+        .onAppear {
+            /// 키보드 Toolbar가 간혈적으로 보이지 않는 버그를 해결하기 위해
+            /// View를 inActive 상태로 만들었다가 Active 상태로 만들어 해결
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                changeViewStatusToActive()
+            }
+            
+            if dailyMemoryViewModel.selectedMemory?.photos.isEmpty == false {
+                photosPickerViewModel.convertToPhotosPickerItem(
+                    from: dailyMemoryViewModel.selectedMemory?.photos ?? []
+                )
+            }
+        }
     }
     
     @ViewBuilder
     private func PhotosView() -> some View {
-        let selectedPhotos = photosPickerViewModel.selectedPhotos
-        let selectedPhotosURL = dailyMemoryViewModel.selectedMemory?.photos ?? []
-        
-        if selectedPhotos.count >= selectedPhotosURL.count {
-            HStack(spacing: 4) {
-                ForEach(0..<photosPickerViewModel.selectedPhotos.count, id: \.self) { index in
-                    DailyMemoryPhoto(
-                        photos: photosPickerViewModel.selectedPhotos,
-                        index: index
-                    )
-                }
-            }
-        } else {
-            // URL 데이터를 UIImage로 변환 중인 상태라면 placeholder 띄우기
-            
-            let screenWidth = getScreenWidth()
-            let photoCount = Double(selectedPhotosURL.count)
-            
-            HStack(spacing: 4) {
-                
-                ForEach(0..<selectedPhotosURL.count, id: \.self) { index in
-                    
-                    if let photo = photosPickerViewModel.selectedPhotos[safe: index] {
-                        Image(uiImage: photo)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(
-                                width: screenWidth / photoCount - 4,
-                                height: screenWidth / photoCount - 4
-                            )
-                            .frame(maxHeight: screenWidth / 2)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    } else {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(ColorConstant.bgSecondary)
-                            .frame(
-                                width: screenWidth / photoCount - 4,
-                                height: screenWidth / photoCount - 4
-                            )
-                            .frame(maxHeight: screenWidth / 2)
-                    }
-                }
+        HStack(spacing: 4) {
+            ForEach(photosPickerViewModel.photoAttachments, id: \.photoPickerItem?.itemIdentifier) { photoAttachment in
+                DailyMemoryPhoto(photoAttachment: photoAttachment)
             }
         }
+        .environmentObject(photosPickerViewModel)
     }
-    
+
     @ViewBuilder
-    private func BottomBar() -> some View {
-        HStack(alignment: .top) {
-            
-            PhotosPicker(
-                selection: $photosPickerViewModel.photoSelections,
-                maxSelectionCount: 3,
-                matching: .any(of: [.images, .not(.videos)] )
-            ) {
-                Image(systemName: "photo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24)
-                    .foregroundStyle(ColorConstant.fgPrimary)
-            }
-            .padding(.leading, 24)
-            
-            Spacer()
+    private func PhotosPickerView() -> some View {
+        let keyboardHeight = keyboardResponder.keyboardHeight ?? 380
+        
+        PhotosPicker(
+            selection: $photosPickerViewModel.photoSelections,
+            maxSelectionCount: 3,
+            selectionBehavior: .continuous,
+            matching: .any(of: [.images, .not(.videos)] ),
+            preferredItemEncoding: .current,
+            photoLibrary: .shared()
+        ) {
+            Text("사진 선택")
         }
-        .frame(height: 48)
-        .background(ColorConstant.bgSecondary)
+        .photosPickerStyle(.inline)
+        .photosPickerAccessoryVisibility(.hidden, edges: .vertical)
+        .frame(height: photosPickerViewModel.showPhotosPicker ? keyboardHeight : 0)
+        .offset(y: photosPickerViewModel.showPhotosPicker ? 0 : keyboardHeight)
+        .animation(.spring(), value: photosPickerViewModel.showPhotosPicker)
+        .cornerRadius(8)
+        .onChange(of: keyboardResponder.isVisible) { _, isVisible in
+            if isVisible, photosPickerViewModel.showPhotosPicker {
+                photosPickerViewModel.showPhotosPicker = false
+            }
+        }
     }
     
     private func uploadMemory() {
@@ -157,7 +165,6 @@ struct DailyMemorizeView: View {
 
         dailyMemoryViewModel.selectedMemory?.photos = photosURL
     }
-    
     
     // 작성하고있는 데이터의 uuid가 이미 존재한다면 편집 중 그렇지 않으면 새로 작성 중
     private func isEditing() -> Bool {
@@ -188,10 +195,14 @@ struct DailyMemorizeView: View {
         
         
         return calendar.date(from: mergedDateComponents) ?? Date()
-        
     }
+    
+    private func changeViewStatusToActive() {
+        disabled = false
+        isFocused = true
+    }
+    
 }
-
 #Preview {
     HomeView()
         .environmentObject(UserViewModel())

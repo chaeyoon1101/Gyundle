@@ -60,7 +60,7 @@ struct WalkingMemorizeView: View {
     
     private func uploadMemory() async {
         let date = calendarViewModel.selectedDate
-        let day = date.asDay()
+        let day = date.toDay()
         let endTime = Date()
         let coordinates = locationDataManager.coordinates.map { $0.toCoordinate() }
         

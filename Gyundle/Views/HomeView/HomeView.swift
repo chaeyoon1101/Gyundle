@@ -47,9 +47,7 @@ struct HomeView: View {
         .padding()
         .ignoresSafeArea()
         .fullScreenCover(isPresented: $dailyMemoryViewModel.isPresentedMemorizeView) {
-            DailyMemorizeView(
-                date: calendarViewModel.selectedDate
-            )
+            DailyMemorizeView(date: calendarViewModel.selectedDate)
         }
         .fullScreenCover(isPresented: $isPresentedWalkingMemorizeView) {
             WalkingMemorizeView(isPresented: $isPresentedWalkingMemorizeView)
