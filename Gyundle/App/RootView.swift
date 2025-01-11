@@ -39,6 +39,18 @@ struct RootView<Content: View>: View {
     }
 }
 
+fileprivate struct AppWideOverlayView: View {
+    @EnvironmentObject private var overlayStore: AppWideOverlayStore
+    
+    var body: some View {
+        ZStack {
+            ForEach(overlayStore.overlayViews) { view in
+                view.content
+            }
+        }
+    }
+}
+
 fileprivate class PassthroughWindow: UIWindow {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard let hitView = super.hitTest(point, with: event),
@@ -55,5 +67,3 @@ fileprivate class PassthroughWindow: UIWindow {
         return nil
     }
 }
-
-

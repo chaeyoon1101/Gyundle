@@ -61,14 +61,4 @@ struct AppWideOverlayModifier<ViewContent: View>: ViewModifier {
     }
 }
 
-fileprivate struct AppWideOverlayView: View {
-    @EnvironmentObject private var overlayStore: AppWideOverlayStore
-    
-    var body: some View {
-        ZStack {
-            ForEach(overlayStore.overlayViews) { view in
-                view.content
-            }
-        }
-    }
-}
+
