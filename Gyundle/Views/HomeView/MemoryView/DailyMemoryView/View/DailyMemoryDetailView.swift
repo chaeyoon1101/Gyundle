@@ -21,14 +21,14 @@ struct DailyMemoryDetailView: View {
                     
                     if let memory = dailyMemoryViewModel.selectedMemory {
                         VStack {
-                                if !memory.photos.isEmpty {
-                                    PhotoGridView(photosURL: memory.photos)
-                                        .frame(height: getScreenWidth() / CGFloat(memory.photos.count) - 4)
-                                }
-                                
-                                Text(memory.text)
-                                    .align(.leading)
-                                    .padding()
+                            if !memory.photos.isEmpty {
+                                PhotoGridView(photosURL: memory.photos)
+                                    .frame(height: getScreenWidth() / CGFloat(memory.photos.count) - 4)
+                            }
+                            
+                            Text(memory.text)
+                                .align(.leading)
+                                .padding()
                         }
                         .navigationTitle(memory.date.formatting("M월 d일의 기억"))
                         .navigationBarTitleDisplayMode(.inline)

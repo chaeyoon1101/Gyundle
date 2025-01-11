@@ -9,13 +9,8 @@ import SwiftUI
 
 @MainActor
 class DetailImageViewModel: ObservableObject {
-    // 모든 뷰 계층에서 최상단에서 보이게하기 위해 SceneDelegate를 사용함
-    // SceneDelegate와 View간의 데이터 공유를 위해 싱글톤으로 구현
-    static let shared = DetailImageViewModel()
-    private init() { }
-    
     // MARK: 디테일 뷰에서 어떤 이미지를 보여줄 건지를 담는 프로퍼티
-    @Published var isPresented: Bool = false
+    @Published var isShowing: Bool = false
     @Published var photoSelection: [String] = []
     @Published var selectedPhoto: String? = nil
     
@@ -24,20 +19,16 @@ class DetailImageViewModel: ObservableObject {
     @Published var scale: CGFloat = 1
     
     func pushView(with selectedPhoto: String?, selection: [String]) {
-        withAnimation(.spring(duration: 0.35)) {  [weak self] in
-            guard let self else { return }
-            
-            self.photoSelection = selection
-            self.selectedPhoto = selectedPhoto
-            isPresented.toggle()
-        }
+        self.selectedPhoto = selectedPhoto
+        self.photoSelection = selection
+        isShowing = true
     }
     
     func popView() {
-        withAnimation(.easeOut(duration: 0.35)) { [weak self] in
+        withAnimation(.snappy) { [weak self] in
             guard let self else { return }
             
-            isPresented.toggle()
+            isShowing = false
             self.photoSelection.removeAll()
             self.selectedPhoto = nil
         } completion: {

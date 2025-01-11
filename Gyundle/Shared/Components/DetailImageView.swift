@@ -8,45 +8,41 @@
 import SwiftUI
 
 struct DetailImageView: View {
-    @ObservedObject private var detailImageViewModel = DetailImageViewModel.shared
+    @EnvironmentObject private var detailImageViewModel: DetailImageViewModel
     
     var body: some View {
-        if detailImageViewModel.isPresented {
-            
-            ZStack {
-                Self.background(color: .black)
-                    .opacity(detailImageViewModel.scale)
+        ZStack {
+            Self.background(color: .black).opacity(detailImageViewModel.scale)
+             
+            TabView(selection: $detailImageViewModel.selectedPhoto) {
                 
-                TabView(selection: $detailImageViewModel.selectedPhoto) {
+                ForEach(detailImageViewModel.photoSelection, id: \.self) { photoURL in
                     
-                    ForEach(detailImageViewModel.photoSelection, id: \.self) { photoURL in
-                        
-                        CachedAsyncImage(url: URL(string: photoURL)) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                            case .empty:
-                                LoadingView()
-                            case .failure(_ ):
-                                Image(systemName: "xmark.circle")
-                            @unknown default:
-                                LoadingView()
-                            }
+                    CachedAsyncImage(url: URL(string: photoURL)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        case .empty:
+                            LoadingView()
+                        case .failure(_ ):
+                            Image(systemName: "xmark.circle")
+                        @unknown default:
+                            LoadingView()
                         }
-                        .tag(photoURL)
-                        .offset(detailImageViewModel.position)
-                        .scaleEffect(detailImageViewModel.scale)
                     }
+                    .tag(photoURL)
+                    .offset(detailImageViewModel.position)
+                    .scaleEffect(detailImageViewModel.scale)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
             }
-            .gesture(dragGesture)
+            .tabViewStyle(.page(indexDisplayMode: .always))
         }
+        .gesture(dragGesture)
     }
     
-    var dragGesture: AnyGesture<DragGesture.Value> {
+    private var dragGesture: AnyGesture<DragGesture.Value> {
         AnyGesture(
             DragGesture()
                 .onChanged { value in

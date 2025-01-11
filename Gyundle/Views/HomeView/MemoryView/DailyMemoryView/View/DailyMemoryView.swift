@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct DailyMemoryView: View {
-    @ObservedObject private var detailImageViewModel = DetailImageViewModel.shared
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     
     @State private var isDetailViewPresented: Bool = false

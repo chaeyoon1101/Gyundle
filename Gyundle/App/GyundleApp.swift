@@ -5,8 +5,6 @@ import KakaoSDKAuth
 
 @main
 struct GyundleApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
     @StateObject var authViewModel = AuthViewModel()
     @StateObject var userViewModel = UserViewModel()
     
@@ -19,14 +17,16 @@ struct GyundleApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authViewModel)
-                .environmentObject(userViewModel)
-                .onOpenURL(perform: { url in
-                    if AuthApi.isKakaoTalkLoginUrl(url) {
-                        _ = AuthController.handleOpenUrl(url: url)
-                    }
-                })
+            RootView {
+                ContentView()
+                    .environmentObject(authViewModel)
+                    .environmentObject(userViewModel)
+                    .onOpenURL(perform: { url in
+                        if AuthApi.isKakaoTalkLoginUrl(url) {
+                            _ = AuthController.handleOpenUrl(url: url)
+                        }
+                    })
+            }
         }
     }
 }
