@@ -8,8 +8,6 @@ struct HomeView: View {
     // MARK: View 상태 관리
     @State private var showingMemorizeView: Bool = false
     
-    @State private var isPresentedWalkingMemorizeView: Bool = false
-    
     var body: some View {
         ZStack {
             
@@ -22,7 +20,7 @@ struct HomeView: View {
                     let selectedDate = calendarViewModel.selectedDate
                     
 //                    if let dogWalkingMemory: DogWalkingMemory = dailyMemoryViewModel.getMemory(of: .dogWalking, from: selectedDate) {
-//                        DogWalkingMemoryView(memory: dogWalkingMemory)
+                    DogWalkingMemoryView(memory: DogWalkingMemory.defaultMemory())
 //                    }
                     
                     if let dailyMemory = dailyMemoryViewModel.getMemory(from: selectedDate) {
@@ -49,10 +47,11 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $dailyMemoryViewModel.isPresentedMemorizeView) {
             DailyMemorizeView(date: calendarViewModel.selectedDate)
         }
-        .fullScreenCover(isPresented: $isPresentedWalkingMemorizeView) {
-            WalkingMemorizeView(isPresented: $isPresentedWalkingMemorizeView)
+        .fullScreenCover(isPresented: $dogWalkingViewModel.isPresentedMemorizeView) {
+            DogWalkingMemorizeView()
         }
         .environmentObject(dailyMemoryViewModel)
+        .environmentObject(dogWalkingViewModel)
     }
     
     @ViewBuilder
@@ -80,7 +79,7 @@ struct HomeView: View {
                 text: "산책하기"
             ) {
 //                memoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
-                isPresentedWalkingMemorizeView.toggle()
+                dogWalkingViewModel.isPresentedMemorizeView.toggle()
             }
             
             MemorizeViewButton(

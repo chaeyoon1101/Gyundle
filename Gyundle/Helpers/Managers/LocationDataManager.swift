@@ -1,51 +1,55 @@
 import Foundation
-
 import CoreLocation
 
-class LocationDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    var locationManager = CLLocationManager()
+class LocationDataManager: NSObject, ObservableObject {
+    private var locationManager = CLLocationManager()
     @Published var authorizationStatus: CLAuthorizationStatus?
     @Published var coordinates: [CLLocationCoordinate2D] = []
     
     override init() {
         super.init()
+        
+        setupLocationManager()
+    }
+    
+    deinit {
+        locationManager.stopUpdatingLocation()
+    }
+    
+    private func setupLocationManager() {
         locationManager.delegate = self
         locationManager.allowsBackgroundLocationUpdates = true
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.pausesLocationUpdatesAutomatically = false
+        
         locationManager.startUpdatingLocation()
     }
-    
-    func stopUpdatingLocation() {
-        locationManager.stopUpdatingLocation()
-    }
-    
+}
+
+extension LocationDataManager: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch manager.authorizationStatus {
+        authorizationStatus = manager.authorizationStatus
+        
+        switch authorizationStatus {
+        case .notDetermined:
+            print("Location Request not determined")
+            locationManager.requestAlwaysAuthorization()
+            
         case .authorizedAlways:
-            authorizationStatus = .authorizedAlways
-            locationManager.requestLocation()
-            break
+            print("Location Request always authorized")
+            
         case .authorizedWhenInUse:
-            authorizationStatus = .authorizedWhenInUse
-            manager.requestAlwaysAuthorization()
-            locationManager.requestLocation()
-            break
+            print("Location Request authorized when in use")
+            
             
         case .restricted:
-            authorizationStatus = .restricted
-            break
+        // 사용자가 권한을 허용할 수 없는 상태
+        // 보호자 통제 설정 등 위치 서비스를 제한한 경우
+            print("Location Request restricted")
             
         case .denied:
-            authorizationStatus = .denied
-            break
             
-        case .notDetermined:
-            authorizationStatus = .notDetermined
-            manager.requestAlwaysAuthorization()
-
-            break
-            
+            print("Location Request denied")
         default:
             break
         }
@@ -58,7 +62,7 @@ class LocationDataManager: NSObject, ObservableObject, CLLocationManagerDelegate
             
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             print(coordinate.latitude.description)
-            print(coordinate.latitude.debugDescription)
+            print(coordinate.longitude.description)
             
             coordinates.append(coordinate)
         }
@@ -66,12 +70,5 @@ class LocationDataManager: NSObject, ObservableObject, CLLocationManagerDelegate
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("error: \(error.localizedDescription)")
-    }
-}
-
-extension CLLocationCoordinate2D: Equatable {
-    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
-        return lhs.latitude  == rhs.latitude &&
-               lhs.longitude == rhs.longitude
     }
 }

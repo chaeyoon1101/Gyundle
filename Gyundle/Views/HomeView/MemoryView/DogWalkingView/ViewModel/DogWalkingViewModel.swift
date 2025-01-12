@@ -8,5 +8,5 @@
 import Foundation
 
 class DogWalkingViewModel: ObservableObject {
-    
+    @Published var isPresentedMemorizeView: Bool = false
 }

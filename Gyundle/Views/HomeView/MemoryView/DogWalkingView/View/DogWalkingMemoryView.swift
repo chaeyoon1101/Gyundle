@@ -4,19 +4,34 @@ struct DogWalkingMemoryView: View {
     var memory: DogWalkingMemory
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Image(systemName: "dog.fill")
-                    .imageScale(.medium)
-                
-                Text("산책 기록")
-                    .font(.headline)
-                    .bold()
-                Spacer()
-            }
-            .padding(.leading)
+        HeaderView()
+            .padding(.bottom, -20)
+        
+        VStack {
+//            DogWalkingMapView()
+//                .frame(height: 240)
         }
-        .padding(.horizontal, 8)   
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    ColorConstant.bgContent
+                        .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
+                )
+        )
+    }
+    
+    @ViewBuilder
+    private func HeaderView() -> some View {
+        HStack {
+            Image(systemName: "dog.fill")
+                .imageScale(.medium)
+            
+            Text("산책 기록")
+                .font(.headline)
+                .bold()
+            
+            Spacer()
+        }
     }
 }
 
