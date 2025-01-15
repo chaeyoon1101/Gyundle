@@ -3,8 +3,10 @@ import SwiftUI
 struct DogWalkingMemorizeView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @EnvironmentObject private var dogWalkingViewModel: DogWalkingViewModel
-//    @EnvironmentObject private var calendarViewModel: CalendarViewModel
+    @EnvironmentObject private var dogWalkingViewModel: DogWalkingMemoryViewModel
+    
+    @StateObject private var dogWalkingMemorizeViewModel = DogWalkingMemorizeViewModel()
+    @StateObject private var locationDataManager = LocationDataManager()
     
     @State private var isMapExpanded: Bool = false
     
@@ -14,6 +16,7 @@ struct DogWalkingMemorizeView: View {
             
             VStack {
                 DogWalkingMapView(isMapExpanded: $isMapExpanded)
+                    .environmentObject(locationDataManager)
                     .ignoresSafeArea()
                     .frame(maxHeight: .infinity)
                 
@@ -35,6 +38,13 @@ struct DogWalkingMemorizeView: View {
                     .padding(.horizontal, 4)
                 }
             }
+            .onReceive(dogWalkingMemorizeViewModel.timerPublisher) { _ in
+                dogWalkingMemorizeViewModel.timeSeconds += 1
+                
+                dogWalkingMemorizeViewModel.updateDogWalkingData(
+                    totalDistance: locationDataManager.totalDistance
+                )
+            }
         }
     }
     
@@ -42,7 +52,7 @@ struct DogWalkingMemorizeView: View {
     private func DogWalkingDataView() -> some View {
         VStack {
             VStack {
-                Text("34:01")
+                Text(dogWalkingMemorizeViewModel.dogWalkingTime)
                     .font(.system(size: 56))
                     .bold()
                 
@@ -53,11 +63,11 @@ struct DogWalkingMemorizeView: View {
             .padding(.bottom, 30)
             
             HStack {
-                DogWalkingDataContent(data: "1.12km", subtitle: "산책 거리")
+                DogWalkingDataContent(data: dogWalkingMemorizeViewModel.dogWalkingDistance, subtitle: "산책 거리")
                 
-                DogWalkingDataContent(data: "3.8km/h", subtitle: "산책 속도")
+                DogWalkingDataContent(data: dogWalkingMemorizeViewModel.dogWalkingSpeed, subtitle: "산책 속도")
                 
-                DogWalkingDataContent(data: "7.5kcal", subtitle: "칼로릴 소모량")
+                DogWalkingDataContent(data: dogWalkingMemorizeViewModel.dogWalkingCalories, subtitle: "칼로리 소모량")
             }
         }
         .frame(maxWidth: .infinity)
@@ -68,7 +78,7 @@ struct DogWalkingMemorizeView: View {
     private func DogWalkingDataContent(data: String, subtitle: String) -> some View {
         VStack {
             Text(data)
-                .font(.title2)
+                .font(.title3)
                 .bold()
             
             Text(subtitle)
@@ -111,7 +121,6 @@ struct DogWalkingMemorizeView: View {
             Button {
                 
             } label: {
-                
                 Image("DogPoop")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -146,8 +155,8 @@ fileprivate struct DogWalkingFunctionsButtonStyle: ButtonStyle {
     }
 }
 
-#Preview {
-    DogWalkingMemorizeView()
-        .environmentObject(DogWalkingViewModel())
-}
+//#Preview {
+//    DogWalkingMemorizeView()
+//        .environmentObject(DogWalkingMemoryViewModel())
+//}
 

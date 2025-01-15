@@ -2,7 +2,7 @@ import SwiftUI
 import MapKit
 
 struct DogWalkingMapView: View {
-    @StateObject var locationDataManager = LocationDataManager()
+    @EnvironmentObject private var locationDataManager: LocationDataManager
     
     @Namespace var mapScope
     @State private var position: MapCameraPosition = .userLocation(
@@ -100,5 +100,5 @@ struct DogWalkingMapView: View {
 
 #Preview {
     DogWalkingMemorizeView()
-        .environmentObject(DogWalkingViewModel())
+        .environmentObject(DogWalkingMemoryViewModel())
 }

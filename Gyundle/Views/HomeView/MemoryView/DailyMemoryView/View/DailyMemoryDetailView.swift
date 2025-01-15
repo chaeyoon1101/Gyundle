@@ -109,5 +109,4 @@ struct DailyMemoryDetailView: View {
 #Preview {
     HomeView()
         .environmentObject(AuthViewModel())
-        .environmentObject(UserViewModel())
 }

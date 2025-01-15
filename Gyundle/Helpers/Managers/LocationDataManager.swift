@@ -6,6 +6,10 @@ class LocationDataManager: NSObject, ObservableObject {
     @Published var authorizationStatus: CLAuthorizationStatus?
     @Published var coordinates: [CLLocationCoordinate2D] = []
     
+    // 이동거리 계산
+    var currentLocation: CLLocation?
+    var totalDistance: CLLocationDistance = 0
+    
     override init() {
         super.init()
         
@@ -56,16 +60,21 @@ extension LocationDataManager: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let recentlyLocation = locations.last {
-            let lat = recentlyLocation.coordinate.latitude
-            let lon = recentlyLocation.coordinate.longitude
-            
-            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            print(coordinate.latitude.description)
-            print(coordinate.longitude.description)
-            
-            coordinates.append(coordinate)
+        guard let newLocation = locations.last else { return }
+        
+        let lat = newLocation.coordinate.latitude
+        let lon = newLocation.coordinate.longitude
+        let newCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+
+        coordinates.append(newCoordinate)
+        
+        
+        if let currentLocation {
+            let distance = newLocation.distance(from: currentLocation)
+            totalDistance += distance
         }
+        
+        currentLocation = newLocation
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

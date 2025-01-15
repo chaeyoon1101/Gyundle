@@ -1,18 +1,17 @@
 import Foundation
 import FirebaseAuth
 
-class UserViewModel: ObservableObject {
+final class UserManager: ObservableObject {
+    static let shared = UserManager()
+    private init() { }
+    
     @Published var user: User?
     
-    func fetchUserData(id: String) async {
-        do {
-            let fetchedUser = try await FirebaseManager.shared.fetchUserData(id: id)
-            
-            user = fetchedUser
-            print("UserViewModel.fetchUserData fetch userData 성공")
-        } catch {
-            print("UserViewModel.fetchUserData Error:", error.localizedDescription)
-        }
+    func fetchUserData(id: String) async throws {
+        let fetchedUser = try await FirebaseManager.shared.fetchUserData(id: id)
+        
+        user = fetchedUser
+        print("fetch userData 성공")
     }
     
     // MARK: 유저 정보 DB에 업로드
@@ -22,18 +21,21 @@ class UserViewModel: ObservableObject {
             return
         }
         
-        let user = User(
+        let updatedUser = User(
             id: currentUser.uid,
             email: currentUser.email ?? currentUser.uid,
             name: userData.name,
+            weight: userData.weight,
             photo: userData.photo,
             dateOfBirth: userData.dateOfBirth
         )
         
         do {
-            try await FirebaseManager.shared.uploadUserInfo(user: user)
+            try await FirebaseManager.shared.uploadUserInfo(user: updatedUser)
             
-            await fetchUserData(id: user.id)
+            await MainActor.run {
+                user = updatedUser
+            }
         } catch {
             print("유저 Info 업로드 실패")
         }

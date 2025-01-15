@@ -7,6 +7,6 @@
 
 import Foundation
 
-class DogWalkingViewModel: ObservableObject {
+class DogWalkingMemoryViewModel: ObservableObject {
     @Published var isPresentedMemorizeView: Bool = false
 }

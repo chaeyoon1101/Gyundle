@@ -173,19 +173,6 @@ class FirebaseManager {
         return userData
     }
     
-    func hasUserInfo(id: String) async -> Bool {
-        let userRef = db.collection("users").document(id)
-        
-        do {
-            let document = try await userRef.getDocument()
-            
-            return document.exists
-        } catch {
-            return false
-        }
-    }
-    
-    
     // MARK: Firebase Storage 이미지 저장
     func uploadPhoto(with data: Data, to folderName: String) async throws -> String {
         let storage = Storage.storage()

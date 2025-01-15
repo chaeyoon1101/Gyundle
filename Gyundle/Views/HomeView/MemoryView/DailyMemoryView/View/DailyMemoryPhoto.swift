@@ -60,5 +60,4 @@ struct DailyMemoryPhoto: View {
 #Preview {
     HomeView()
         .environmentObject(AuthViewModel())
-        .environmentObject(UserViewModel())
 }

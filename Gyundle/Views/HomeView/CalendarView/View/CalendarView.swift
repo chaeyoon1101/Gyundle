@@ -23,6 +23,5 @@ struct CalendarView: View {
 }
 #Preview {
     HomeView()
-        .environmentObject(UserViewModel())
         .environmentObject(DailyMemoryViewModel())
 }

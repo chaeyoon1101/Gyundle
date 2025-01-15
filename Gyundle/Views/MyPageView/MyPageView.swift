@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct MyPageView: View {
-    @EnvironmentObject var userViewModel: UserViewModel
+    @StateObject private var userManager = UserManager.shared
     @StateObject var photosPickerViewModel = PhotosPickerViewModel()
     @ObservedObject var userData = UserInfoData()
     
     var body: some View {
         ZStack {
             VStack {
-                if let user = userViewModel.user {
+                if let user = userManager.user {
                     VStack {
                         Text(user.name)
                         Text(user.email)
@@ -49,5 +49,4 @@ struct MyPageView: View {
 
 #Preview {
     MyPageView()
-        .environmentObject(UserViewModel())
 }

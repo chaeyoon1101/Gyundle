@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var dailyMemoryViewModel = DailyMemoryViewModel()
-    @StateObject private var dogWalkingViewModel = DogWalkingViewModel()
+    @StateObject private var dogWalkingViewModel = DogWalkingMemoryViewModel()
     @StateObject private var calendarViewModel = CalendarViewModel()
     
     // MARK: View 상태 관리
@@ -126,5 +126,4 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environmentObject(AuthViewModel())
-        .environmentObject(UserViewModel())
 }

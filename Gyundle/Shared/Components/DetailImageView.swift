@@ -70,5 +70,4 @@ struct DetailImageView: View {
 #Preview {
     HomeView()
         .environmentObject(AuthViewModel())
-        .environmentObject(UserViewModel())
 }

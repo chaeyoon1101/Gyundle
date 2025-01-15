@@ -37,9 +37,17 @@ class AuthViewModel: ObservableObject {
             
             if let user {
                 Task {
-                    let hasUserInfo = await FirebaseManager.shared.hasUserInfo(id: user.uid)
-                    await MainActor.run {
-                        self.status = hasUserInfo ? .loggedIn : .signUp
+                    do {
+                        try await UserManager.shared.fetchUserData(id: user.uid)
+                            
+                        await MainActor.run {
+                            self.status = .loggedIn
+                        }
+                    } catch {
+                        print("User Data가 존재하지 않음:", error.localizedDescription)
+                        await MainActor.run {
+                            self.status = .loggedOut
+                        }
                     }
                 }
             } else {
