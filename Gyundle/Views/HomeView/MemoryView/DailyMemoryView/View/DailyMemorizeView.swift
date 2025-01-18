@@ -103,9 +103,9 @@ struct DailyMemorizeView: View {
                 changeViewStatusToActive()
             }
             
-            if dailyMemoryViewModel.selectedMemory?.photos.isEmpty == false {
+            if dailyMemoryViewModel.selectedMemory?.photosURL.isEmpty == false {
                 photosPickerViewModel.convertToPhotosPickerItem(
-                    from: dailyMemoryViewModel.selectedMemory?.photos ?? []
+                    from: dailyMemoryViewModel.selectedMemory?.photosURL ?? []
                 )
             }
         }
@@ -165,7 +165,7 @@ struct DailyMemorizeView: View {
     private func uploadPhoto() async {
         let photosURL = await photosPickerViewModel.uploadPhoto(to: .dailyMemory)
 
-        dailyMemoryViewModel.selectedMemory?.photos = photosURL
+        dailyMemoryViewModel.selectedMemory?.photosURL = photosURL
     }
     
     // 작성하고있는 데이터의 uuid가 이미 존재한다면 편집 중 그렇지 않으면 새로 작성 중

@@ -11,8 +11,8 @@ struct DailyMemoryView: View {
             .padding(.bottom, -20)
         
         VStack {
-            if !memory.photos.isEmpty {
-                PhotoGridView(photosURL: memory.photos)
+            if !memory.photosURL.isEmpty {
+                PhotoGridView(photosURL: memory.photosURL)
                     .frame(height: 120)
                     .padding(4)
             }

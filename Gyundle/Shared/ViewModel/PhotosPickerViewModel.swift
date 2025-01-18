@@ -2,18 +2,6 @@ import SwiftUI
 import FirebaseStorage
 import PhotosUI
 
-enum PhotoStorage {
-    case profile
-    case dailyMemory
-    
-    var folderName: String {
-        switch self {
-        case .profile: return "ProfilePhotos"
-        case .dailyMemory: return "DailyMemoryPhotos"
-        }
-    }
-}
-
 final class PhotoAttachment {
     var photoPickerItem: PhotosPickerItem?
     var isDownloaded: Bool

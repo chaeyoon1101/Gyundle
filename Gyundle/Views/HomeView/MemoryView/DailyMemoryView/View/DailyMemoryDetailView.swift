@@ -21,9 +21,9 @@ struct DailyMemoryDetailView: View {
                     
                     if let memory = dailyMemoryViewModel.selectedMemory {
                         VStack {
-                            if !memory.photos.isEmpty {
-                                PhotoGridView(photosURL: memory.photos)
-                                    .frame(height: getScreenWidth() / CGFloat(memory.photos.count) - 4)
+                            if !memory.photosURL.isEmpty {
+                                PhotoGridView(photosURL: memory.photosURL)
+                                    .frame(height: getScreenWidth() / CGFloat(memory.photosURL.count) - 4)
                             }
                             
                             Text(memory.text)

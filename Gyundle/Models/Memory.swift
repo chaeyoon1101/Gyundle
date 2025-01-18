@@ -1,4 +1,5 @@
 import Foundation
+import CoreLocation
 
 struct Memory: Codable {
     var dailyMemories: [DailyMemory]?
@@ -10,14 +11,14 @@ struct DailyMemory: Memorable {
     var day: String
     var date: Date
     var text: String
-    var photos: [String]
+    var photosURL: [String]
  
     static func defaultMemory() -> Self {
         return DailyMemory(
             day: .init(),
             date: .init(),
             text: .init(),
-            photos: .init()
+            photosURL: .init()
         )
     }
 }
@@ -29,19 +30,40 @@ struct DogWalkingMemory: Memorable {
     var startTime: Date
     var endTime: Date
     var coordinates: [Coordinate]
+    var markers: [DogWalkingMarker]
     
     static func defaultMemory() -> Self {
         return DogWalkingMemory(
-            day: .init(),
-            date: .init(),
-            startTime: .init(),
-            endTime: .init(),
-            coordinates: .init()
+            day: "",
+            date: Date(),
+            startTime: Date(),
+            endTime: Date(),
+            coordinates: .init(),
+            markers: []
         )
     }
+}
+
+struct DogWalkingMarker: Identifiable, Codable {
+    var id: String = UUID().uuidString
+    var coordinate: Coordinate
+    var memo: String
+    var imageURL: String?
 }
 
 struct Coordinate: Codable {
     var latitude: String
     var longitude: String
+    
+    func toCLLocationCoordinate2D() -> CLLocationCoordinate2D {
+        guard let latitude = Double(latitude),
+              let longitude = Double(longitude) else {
+            return .init()
+        }
+              
+        return CLLocationCoordinate2D(
+            latitude: latitude,
+            longitude: longitude
+        )
+    }
 }

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct DogWalkingMemorizeView: View {
     @Environment(\.dismiss) private var dismiss
-    
     @EnvironmentObject private var dogWalkingViewModel: DogWalkingMemoryViewModel
     
     @StateObject private var dogWalkingMemorizeViewModel = DogWalkingMemorizeViewModel()
@@ -16,7 +15,6 @@ struct DogWalkingMemorizeView: View {
             
             VStack {
                 DogWalkingMapView(isMapExpanded: $isMapExpanded)
-                    .environmentObject(locationDataManager)
                     .ignoresSafeArea()
                     .frame(maxHeight: .infinity)
                 
@@ -24,10 +22,12 @@ struct DogWalkingMemorizeView: View {
                     VStack(spacing: 15) {
                         DogWalkingDataView()
                         
-                        DogWalkingStopButton()
-                        
-                        DogWalkingFuctionButtons()
-                            .padding(.top, 30)
+                        HStack(spacing: 45) {
+                            DogWalkingStopButton()
+                            
+                            DogWalkingMarkingButton()
+                        }
+                        .frame(maxHeight: .infinity, alignment: .center)
                     }
                     .frame(maxHeight: .infinity, alignment: .top)
                     .background(
@@ -45,7 +45,15 @@ struct DogWalkingMemorizeView: View {
                     totalDistance: locationDataManager.totalDistance
                 )
             }
+            .sheet(isPresented: $dogWalkingMemorizeViewModel.showMarkingView) {
+                DogWalkingMarkingView(location: $locationDataManager.currentLocation)
+                    .presentationDetents([.medium, .large])
+                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+                    .presentationBackground(ColorConstant.bgContent)
+            }
         }
+        .environmentObject(dogWalkingMemorizeViewModel)
+        .environmentObject(locationDataManager)
     }
     
     @ViewBuilder
@@ -99,44 +107,25 @@ struct DogWalkingMemorizeView: View {
                 .foregroundStyle(ColorConstant.bgPrimary)
                 .frame(width: 32, height: 32)
                 .frame(width: 96, height: 96)
-                .background(
-                    Circle().fill(ColorConstant.fgPrimary)
-                )
+                .background(ColorConstant.fgPrimary, in: .circle)
         }
     }
     
     @ViewBuilder
-    private func DogWalkingFuctionButtons() -> some View {
-        HStack(spacing: 45) {
-            Button {
-                
-            } label: {
-                Image("DogPee")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundStyle(.yellow)
-            }
-            .buttonStyle(DogWalkingFunctionsButtonStyle())
-            
-            Button {
-                
-            } label: {
-                Image("DogPoop")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundStyle(.brown)
-            }
-            .buttonStyle(DogWalkingFunctionsButtonStyle())
-            
-            Button {
-                
-            } label: {
-                Image(systemName: "camera.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundStyle(ColorConstant.fgPrimary)
-            }
-            .buttonStyle(DogWalkingFunctionsButtonStyle())
+    private func DogWalkingMarkingButton() -> some View {
+        Button {
+            dogWalkingMemorizeViewModel.showMarkingView = true
+        } label: {
+            Image(systemName: "square.and.pencil")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .foregroundStyle(ColorConstant.fgPrimary)
+                .frame(width: 40, height: 40)
+                .frame(width: 92, height: 92)
+                .background(
+                    Circle()
+                        .strokeBorder(ColorConstant.fgPrimary, style: .init(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                )
         }
     }
 }
@@ -155,8 +144,8 @@ fileprivate struct DogWalkingFunctionsButtonStyle: ButtonStyle {
     }
 }
 
-//#Preview {
-//    DogWalkingMemorizeView()
-//        .environmentObject(DogWalkingMemoryViewModel())
-//}
+#Preview {
+    DogWalkingMemorizeView()
+        .environmentObject(DogWalkingMemoryViewModel())
+}
 

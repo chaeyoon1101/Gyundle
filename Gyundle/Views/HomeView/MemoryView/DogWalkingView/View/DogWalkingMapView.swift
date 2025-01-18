@@ -3,6 +3,7 @@ import MapKit
 
 struct DogWalkingMapView: View {
     @EnvironmentObject private var locationDataManager: LocationDataManager
+    @EnvironmentObject private var dogWalkingMemorizeViewModel: DogWalkingMemorizeViewModel
     
     @Namespace var mapScope
     @State private var position: MapCameraPosition = .userLocation(
@@ -16,8 +17,27 @@ struct DogWalkingMapView: View {
         switch locationDataManager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
             Map(position: $position, scope: mapScope) {
+                // 유저 위치
                 UserAnnotation()
                 
+                
+                // 산책 중 메모
+                ForEach(dogWalkingMemorizeViewModel.dogWalkingMarkers) { marker in
+                    Annotation("", coordinate: marker.coordinate.toCLLocationCoordinate2D()) {
+                        MarkerView(marker)
+                            .highPriorityGesture(
+                                // iOS 18에서부터 Annotation에 .onTapGesture가 항상
+                                // 작동하지 않는 버그 때문에 .highPriorityGesture 사용
+                                TapGesture().onEnded({ _ in
+                                    // Selected marker showing detail View and delete Marker
+                                    dogWalkingMemorizeViewModel.removeMarker(marker)
+                                })
+                            )
+                    }
+                }
+        
+                
+                // 산책했던 길 라인
                 if !locationDataManager.coordinates.isEmpty {
                     MapPolyline(
                         coordinates: locationDataManager.coordinates,
@@ -60,6 +80,9 @@ struct DogWalkingMapView: View {
                     }
                 }
             }
+            .sheet(isPresented: $dogWalkingMemorizeViewModel.showMarkingView) {
+                DogWalkingMarkerDetailView()
+            }
             
         case .notDetermined, .none:
             ColorConstant.bgContent
@@ -68,6 +91,38 @@ struct DogWalkingMapView: View {
         @unknown default:
             Text("unknown")
         }
+    }
+    
+    @ViewBuilder
+    private func MarkerView(_ marker: DogWalkingMarker) -> some View {
+        ZStack(alignment: .bottom) {
+            Path { path in
+                path.move(to: CGPoint(x: 16, y: 15))
+                path.addLine(to: CGPoint(x: 0, y: -15))
+                path.addLine(to: CGPoint(x: 32, y: -15))
+                path.closeSubpath()
+            }
+            .fill(ColorConstant.fgPrimary)
+            .frame(width: 32, height: 32)
+            .contentShape(Rectangle())
+            .padding(.bottom, 15)
+            
+            Circle()
+                .fill(ColorConstant.fgPrimary)
+                .frame(width: 32, height: 32)
+                .overlay {
+                    if let cachedImage = ImageCacheManager.shared.getImage(forKey: marker.id) {
+                        cachedImage
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 28, height: 28)
+                            .clipShape(.circle)
+                            .contentShape(.circle)
+                    }
+                }
+                .padding(.bottom, 45)
+        }
+        .contentShape(Rectangle())
     }
     
     @ViewBuilder
