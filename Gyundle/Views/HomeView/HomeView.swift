@@ -75,7 +75,7 @@ struct HomeView: View {
         HStack {
             MemorizeViewButton(
                 color: Color.brown,
-                image: "WaitingDog",
+                image: "dog.waiting",
                 text: "산책하기"
             ) {
 //                memoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
@@ -84,7 +84,7 @@ struct HomeView: View {
             
             MemorizeViewButton(
                 color: Color.indigo,
-                image: "WriteDiary",
+                image: "dog.write.diary",
                 text: "일기쓰기"
             ) {
                 dailyMemoryViewModel.selectedMemory = DailyMemory.defaultMemory()
