@@ -8,6 +8,7 @@ struct DogWalkingMemorizeView: View {
     @StateObject private var locationDataManager = LocationDataManager()
     
     @State private var isMapExpanded: Bool = false
+    @State private var showMarkingView: Bool = false
     
     var body: some View {
         ZStack {
@@ -45,8 +46,8 @@ struct DogWalkingMemorizeView: View {
                     totalDistance: locationDataManager.totalDistance
                 )
             }
-            .sheet(isPresented: $dogWalkingMemorizeViewModel.showMarkingView) {
-                DogWalkingMarkingView()
+            .sheet(isPresented: $showMarkingView) {
+                DogWalkingMarkingView(isEditing: true)
                     .presentationDetents([.medium, .large])
                     .presentationBackgroundInteraction(.enabled(upThrough: .medium))
                     .presentationBackground(ColorConstant.bgContent)
@@ -119,7 +120,7 @@ struct DogWalkingMemorizeView: View {
                 memo: ""
             )
             
-            dogWalkingMemorizeViewModel.showMarkingView = true
+            showMarkingView = true
         } label: {
             Image(systemName: "square.and.pencil")
                 .resizable()

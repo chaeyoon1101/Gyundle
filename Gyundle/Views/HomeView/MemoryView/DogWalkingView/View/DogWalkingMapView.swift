@@ -10,8 +10,10 @@ struct DogWalkingMapView: View {
         followsHeading: true,
         fallback: .automatic
     )
+    @State private var showMarkerDetailView: Bool = false
     
     @Binding var isMapExpanded: Bool
+    
     
     var body: some View {
         switch locationDataManager.authorizationStatus {
@@ -29,8 +31,8 @@ struct DogWalkingMapView: View {
                                 // iOS 18에서부터 Annotation에 .onTapGesture가 항상
                                 // 작동하지 않는 버그 때문에 .highPriorityGesture 사용
                                 TapGesture().onEnded({ _ in
-                                    // Selected marker showing detail View and delete Marker
-                                    dogWalkingMemorizeViewModel.removeMarker(marker)
+                                    dogWalkingMemorizeViewModel.selectedMarker = marker
+                                    showMarkerDetailView = true
                                 })
                             )
                     }
@@ -80,8 +82,11 @@ struct DogWalkingMapView: View {
                     }
                 }
             }
-            .sheet(isPresented: $dogWalkingMemorizeViewModel.showMarkingView) {
-                DogWalkingMarkerDetailView()
+            .sheet(isPresented: $showMarkerDetailView) {
+                DogWalkingMarkingView()
+                    .presentationDetents([.medium, .large])
+                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+                    .presentationBackground(ColorConstant.bgContent)
             }
             
         case .notDetermined, .none:

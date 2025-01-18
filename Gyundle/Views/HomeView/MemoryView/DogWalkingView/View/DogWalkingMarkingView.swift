@@ -12,39 +12,25 @@ struct DogWalkingMarkingView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var dogWalkingMemorizeViewModel: DogWalkingMemorizeViewModel
     
-    @State private var showCameraView: Bool = false
+    @State private var isEditing: Bool
     @State private var image: UIImage?
+    
+    @State private var showCameraView: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
+    
+    init(isEditing: Bool = false) {
+        self.isEditing = isEditing
+    }
     
     var body: some View {
         NavigationStack {
             VStack {
-                if let image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 150)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 6)
-                        .clipShape(.rect(cornerRadius: 12))
-                        .contentShape(.rect(cornerRadius: 12))
-                }
-                
-                TextField(
-                    "ex) OO이가 냄새를 많이 맡은 곳",
-                    text: Binding(get: {
-                        dogWalkingMemorizeViewModel.selectedMarker?.memo ?? ""
-                    }, set: { newValue in
-                        dogWalkingMemorizeViewModel.selectedMarker?.memo = newValue
-                    }),
-                    axis: .vertical
-                )
-                .lineLimit(1...4)
-                .align(.top)
-                .padding()
-            }
-            .task {
-                if let imageURL = dogWalkingMemorizeViewModel.selectedMarker?.imageURL {
-                    await loadImage(from: imageURL)
+                if isEditing {
+                    MarkerEditView()
+                        .navigationTitle("산책 메모 작성")
+                } else {
+                    MarkerView()
+                        .navigationTitle("산책 메모")
                 }
             }
             .toolbar(content: {
@@ -59,15 +45,57 @@ struct DogWalkingMarkingView: View {
                 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     HStack {
-                        Button {
-                            showCameraView = true
-                        } label: {
-                            Image(systemName: "camera.fill")
+                        if isEditing {
+                            Button {
+                                showCameraView = true
+                            } label: {
+                                Image(systemName: "camera.fill")
+                            }
+                            .foregroundStyle(ColorConstant.fgPrimary)
+                        } else {
+                            Menu {
+                                Button(role: .destructive) {
+                                    showDeleteConfirmation = true
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
+                                }
+                                
+                                Button {
+                                    isEditing = true
+                                } label: {
+                                    Label("편집", systemImage: "pencil")
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .foregroundStyle(ColorConstant.fgPrimary)
+                                    .fontWeight(.bold)
+                            }
+                            .confirmationDialog(
+                                "삭제 확인 알림",
+                                isPresented: $showDeleteConfirmation,
+                                actions: {
+                                    Button("취소", role: .cancel) {
+                                        print("취소")
+                                    }
+                                    
+                                    Button("삭제하기", role: .destructive) {
+                                        dogWalkingMemorizeViewModel.removeMarker()
+                                        dismiss()
+                                    }
+                                },
+                                message: {
+                                    Text("이 메모를 삭제하시겠습니까? 되돌릴 수 없습니다.")
+                                }
+                            )
                         }
-                        .foregroundStyle(ColorConstant.fgPrimary)
                         
                         Button("저장") {
-                            dogWalkingMemorizeViewModel.addMarker(image: image)
+                            if isUpdating() {
+                                dogWalkingMemorizeViewModel.updateMarker(image: image)
+                            } else {
+                                dogWalkingMemorizeViewModel.addMarker(image: image)
+                            }
+                            
                             dismiss()
                         }
                         .foregroundStyle(ColorConstant.accent)
@@ -75,11 +103,69 @@ struct DogWalkingMarkingView: View {
                     }
                 }
             })
-            .navigationTitle("산책 메모 작성")
             .fullScreenCover(isPresented: $showCameraView) {
                 CameraView(seletedImage: $image)
             }
         }
+        .task {
+            if let imageURL = dogWalkingMemorizeViewModel.selectedMarker?.imageURL {
+                await loadImage(from: imageURL)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func MarkerEditView() -> some View {
+        if let image {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(height: 150)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 6)
+                .clipShape(.rect(cornerRadius: 12))
+                .contentShape(.rect(cornerRadius: 12))
+        }
+        
+        TextField(
+            "ex) OO이가 냄새를 많이 맡은 곳",
+            text: Binding(get: {
+                dogWalkingMemorizeViewModel.selectedMarker?.memo ?? ""
+            }, set: { newValue in
+                dogWalkingMemorizeViewModel.selectedMarker?.memo = newValue
+            }),
+            axis: .vertical
+        )
+        .lineLimit(1...4)
+        .align(.top)
+        .padding()
+    }
+    
+    @ViewBuilder
+    private func MarkerView() -> some View {
+        ScrollView(.vertical) {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 150)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 6)
+                    .clipShape(.rect(cornerRadius: 12))
+                    .contentShape(.rect(cornerRadius: 12))
+            }
+            
+            Text(dogWalkingMemorizeViewModel.selectedMarker?.memo ?? "")
+                .multilineTextAlignment(.leading)
+                .align(.topLeading)
+                .padding()
+        }
+    }
+    
+    private func isUpdating() -> Bool {
+        let selectedMarkerID = dogWalkingMemorizeViewModel.selectedMarker?.id
+        
+        return dogWalkingMemorizeViewModel.dogWalkingMarkers.contains(where: { $0.id == selectedMarkerID })
     }
     
     private func loadImage(from url: String) async {
