@@ -55,6 +55,11 @@ struct Coordinate: Codable {
     var latitude: String
     var longitude: String
     
+    init(latitude: String = "", longitude: String = "") {
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+    
     func toCLLocationCoordinate2D() -> CLLocationCoordinate2D {
         guard let latitude = Double(latitude),
               let longitude = Double(longitude) else {

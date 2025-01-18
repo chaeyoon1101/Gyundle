@@ -46,7 +46,7 @@ struct DogWalkingMemorizeView: View {
                 )
             }
             .sheet(isPresented: $dogWalkingMemorizeViewModel.showMarkingView) {
-                DogWalkingMarkingView(location: $locationDataManager.currentLocation)
+                DogWalkingMarkingView()
                     .presentationDetents([.medium, .large])
                     .presentationBackgroundInteraction(.enabled(upThrough: .medium))
                     .presentationBackground(ColorConstant.bgContent)
@@ -114,6 +114,11 @@ struct DogWalkingMemorizeView: View {
     @ViewBuilder
     private func DogWalkingMarkingButton() -> some View {
         Button {
+            dogWalkingMemorizeViewModel.selectedMarker = DogWalkingMarker(
+                coordinate: locationDataManager.currentLocation?.coordinate.toCoordinate() ?? .init(),
+                memo: ""
+            )
+            
             dogWalkingMemorizeViewModel.showMarkingView = true
         } label: {
             Image(systemName: "square.and.pencil")
