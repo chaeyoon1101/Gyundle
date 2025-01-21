@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CoreLocation
 
 final class DogWalkingMemorizeViewModel: ObservableObject {
     // MARK: View Properties
@@ -29,7 +28,7 @@ final class DogWalkingMemorizeViewModel: ObservableObject {
         dogWalkingTime = convertSecondsToTime()
         dogWalkingDistance = String(format: "%.2fkm", totalDistance / 1000)
         dogWalkingSpeed = String(format: "%.1fkm/h", (totalDistance / 1000) / (Double(timeSeconds) / 3600))
-        dogWalkingCalories = calculateCalories(totalDistance: totalDistance)
+        dogWalkingCalories = calculateCalories()
     }
     
     func addMarker(image: UIImage?) {
@@ -91,7 +90,7 @@ final class DogWalkingMemorizeViewModel: ObservableObject {
         }
     }
     
-    private func calculateCalories(totalDistance: Double) -> String {
+    private func calculateCalories() -> String {
         let weight = UserManager.shared.user?.weight ?? 5
         let dogWalkingTime = Double(timeSeconds) / 3600
         let dogWalkingMets = 3.0

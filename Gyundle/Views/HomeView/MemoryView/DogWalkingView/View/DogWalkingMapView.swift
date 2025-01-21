@@ -159,6 +159,6 @@ struct DogWalkingMapView: View {
 }
 
 #Preview {
-    DogWalkingMemorizeView()
+    DogWalkingMemorizeView(date: .init())
         .environmentObject(DogWalkingMemoryViewModel())
 }

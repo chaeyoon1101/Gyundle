@@ -2,13 +2,15 @@ import SwiftUI
 
 struct DogWalkingMemorizeView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var dogWalkingViewModel: DogWalkingMemoryViewModel
+    @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     
     @StateObject private var dogWalkingMemorizeViewModel = DogWalkingMemorizeViewModel()
     @StateObject private var locationDataManager = LocationDataManager()
     
     @State private var isMapExpanded: Bool = false
     @State private var showMarkingView: Bool = false
+    
+    let date: Date
     
     var body: some View {
         ZStack {
@@ -24,7 +26,9 @@ struct DogWalkingMemorizeView: View {
                         DogWalkingDataView()
                         
                         HStack(spacing: 45) {
-                            DogWalkingStopButton()
+                            DogWalkingStopButton(onStopped: {
+                                uploadMemorize()
+                            })
                             
                             DogWalkingMarkingButton()
                         }
@@ -39,6 +43,8 @@ struct DogWalkingMemorizeView: View {
                     .padding(.horizontal, 4)
                 }
             }
+            // TODO: progressView 보여줄건지 고민
+            .progressView(isShowing: $dogWalkingMemoryViewModel.isUploading)
             .onReceive(dogWalkingMemorizeViewModel.timerPublisher) { _ in
                 dogWalkingMemorizeViewModel.timeSeconds += 1
                 
@@ -98,21 +104,6 @@ struct DogWalkingMemorizeView: View {
     }
     
     @ViewBuilder
-    private func DogWalkingStopButton() -> some View {
-        Button {
-            
-        } label: {
-            Image(systemName: "stop.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .foregroundStyle(ColorConstant.bgPrimary)
-                .frame(width: 32, height: 32)
-                .frame(width: 96, height: 96)
-                .background(ColorConstant.fgPrimary, in: .circle)
-        }
-    }
-    
-    @ViewBuilder
     private func DogWalkingMarkingButton() -> some View {
         Button {
             dogWalkingMemorizeViewModel.selectedMarker = DogWalkingMarker(
@@ -134,6 +125,25 @@ struct DogWalkingMemorizeView: View {
                 )
         }
     }
+    
+    private func uploadMemorize() {
+        let coordinates = locationDataManager.coordinates.map { $0.toCoordinate() }
+        dogWalkingMemoryViewModel.selectedMemory?.coordinates = coordinates
+        dogWalkingMemoryViewModel.selectedMemory?.day = date.toDay()
+        dogWalkingMemoryViewModel.selectedMemory?.endTime = Date()
+        dogWalkingMemoryViewModel.selectedMemory?.calories = dogWalkingMemorizeViewModel.dogWalkingCalories
+        dogWalkingMemoryViewModel.selectedMemory?.distance = dogWalkingMemorizeViewModel.dogWalkingDistance
+        dogWalkingMemoryViewModel.selectedMemory?.markers = dogWalkingMemorizeViewModel.dogWalkingMarkers
+        
+        Task {
+            await dogWalkingMemoryViewModel.uploadMemory()
+            
+            await MainActor.run {
+                Haptic.notification(type: .success)
+                dismiss()
+            }
+        }
+    }
 }
 
 fileprivate struct DogWalkingFunctionsButtonStyle: ButtonStyle {
@@ -151,7 +161,7 @@ fileprivate struct DogWalkingFunctionsButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    DogWalkingMemorizeView()
+    DogWalkingMemorizeView(date: .init())
         .environmentObject(DogWalkingMemoryViewModel())
 }
 

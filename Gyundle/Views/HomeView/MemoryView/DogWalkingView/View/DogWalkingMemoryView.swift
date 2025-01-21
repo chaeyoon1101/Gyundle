@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct DogWalkingMemoryView: View {
+    @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     var memory: DogWalkingMemory
 
     var body: some View {
@@ -14,7 +15,7 @@ struct DogWalkingMemoryView: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(
-                    ColorConstant.bgContent
+                    ColorConstant.bgContent 
                         .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
                 )
         )

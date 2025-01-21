@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var dailyMemoryViewModel = DailyMemoryViewModel()
-    @StateObject private var dogWalkingViewModel = DogWalkingMemoryViewModel()
+    @StateObject private var dogWalkingMemoryViewModel = DogWalkingMemoryViewModel()
     @StateObject private var calendarViewModel = CalendarViewModel()
     
     // MARK: View 상태 관리
@@ -47,11 +47,14 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $dailyMemoryViewModel.isPresentedMemorizeView) {
             DailyMemorizeView(date: calendarViewModel.selectedDate)
         }
-        .fullScreenCover(isPresented: $dogWalkingViewModel.isPresentedMemorizeView) {
-            DogWalkingMemorizeView()
+        .fullScreenCover(isPresented: $dogWalkingMemoryViewModel.isPresentedMemorizeView) {
+            DogWalkingMemorizeView(date: calendarViewModel.today)
         }
         .environmentObject(dailyMemoryViewModel)
-        .environmentObject(dogWalkingViewModel)
+        .environmentObject(dogWalkingMemoryViewModel)
+        .task {
+            await dailyMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
+        }
     }
     
     @ViewBuilder
@@ -78,8 +81,8 @@ struct HomeView: View {
                 image: "dog.waiting",
                 text: "산책하기"
             ) {
-//                memoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
-                dogWalkingViewModel.isPresentedMemorizeView.toggle()
+                dogWalkingMemoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
+                dogWalkingMemoryViewModel.isPresentedMemorizeView.toggle()
             }
             
             MemorizeViewButton(
