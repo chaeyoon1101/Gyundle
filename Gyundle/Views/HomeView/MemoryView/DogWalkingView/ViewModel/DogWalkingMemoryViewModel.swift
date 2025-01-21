@@ -36,6 +36,33 @@ class DogWalkingMemoryViewModel: ObservableObject {
         await resetSelectedMemory()
     }
     
+    func fetchMemories(from date: Date) async {
+        let key = convertToKey(from: date)
+        
+        do {
+            let fetchedMemories = try await FirebaseManager.shared.fetchMemories(from: key)
+            
+            await MainActor.run {
+                print(fetchedMemories, key)
+                if let dogWalkingMemories = fetchedMemories.dogWalkingMemories {
+                    self.dogWalkingMemories[key] = dogWalkingMemories
+                }
+            }
+            
+            print("Dog Walking Memories fetch 성공")
+        } catch {
+            print("Dog Walking Memories Fetch 실패:", error.localizedDescription)
+        }
+    }
+    
+    func getMemories(from date: Date) -> [DogWalkingMemory]? {
+        let key = convertToKey(from: date)
+        print(dogWalkingMemories)
+        guard let memories = dogWalkingMemories[key] else { return nil }
+        
+        return memories.filter { $0.day == date.toDay() }
+    }
+    
     @MainActor
     private func resetSelectedMemory() {
         selectedMemory = nil

@@ -3,6 +3,7 @@ import SwiftUI
 struct CalendarView: View {
     @EnvironmentObject private var calendarViewModel: CalendarViewModel
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
+    @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     
     var body: some View {
         VStack {
@@ -14,6 +15,7 @@ struct CalendarView: View {
         .onChange(of: calendarViewModel.currentPageDate) { _, newValue in
             Task {
                 await dailyMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
+                await dogWalkingMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
             }
         }
     }
