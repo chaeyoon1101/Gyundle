@@ -107,13 +107,13 @@ struct DogWalkingMapView: View {
                 path.addLine(to: CGPoint(x: 32, y: -15))
                 path.closeSubpath()
             }
-            .fill(ColorConstant.fgPrimary)
+            .fill(ColorConstant.accent)
             .frame(width: 32, height: 32)
             .contentShape(Rectangle())
             .padding(.bottom, 15)
             
             Circle()
-                .fill(ColorConstant.fgPrimary)
+                .fill(ColorConstant.accent)
                 .frame(width: 32, height: 32)
                 .overlay {
                     if let cachedImage = ImageCacheManager.shared.getImage(forKey: marker.id) {

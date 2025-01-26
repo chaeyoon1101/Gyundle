@@ -8,7 +8,7 @@ struct DogWalkingMemoryView: View {
     var body: some View {
         HeaderView()
             .padding(.bottom, -20)
-        
+
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 ForEach(memories, id: \.uid) { memory in
@@ -33,9 +33,9 @@ struct DogWalkingMemoryView: View {
                     .clipShape(.rect(cornerRadius: 8))
                 
                 VStack(alignment: .leading) {
-                    Text("저녁 산책")
+                    Text(memory.title)
                         .font(.system(size: 18))
-                    Text("오후 5:36")
+                    Text(memory.date.formatting("aa M:dd"))
                         .font(.footnote)
                         .foregroundStyle(ColorConstant.fgSecondary)
                 }
@@ -44,7 +44,7 @@ struct DogWalkingMemoryView: View {
             
             HStack(spacing: 15) {
                 VStack(alignment: .leading) {
-                    Text("2.15")
+                    Text(memory.distance)
                         .font(.system(size: 24)).bold()
                         .lineLimit(1)
                     
@@ -55,7 +55,7 @@ struct DogWalkingMemoryView: View {
                 .align(.leading)
                 
                 VStack(alignment: .leading) {
-                    Text("12.12")
+                    Text(memory.calories)
                         .font(.system(size: 24)).bold()
                         .lineLimit(1)
                     
@@ -66,7 +66,7 @@ struct DogWalkingMemoryView: View {
                 .align(.leading)
                 
                 VStack(alignment: .leading) {
-                    Text("1:14:21")
+                    Text(memory.time)
                         .font(.system(size: 24)).bold()
                         .lineLimit(1)
                     
@@ -84,7 +84,7 @@ struct DogWalkingMemoryView: View {
         .frame(height: 180)
         .background(
             ColorConstant.bgContent
-                .shadow(.drop(color: .primary.opacity(0.2), radius: 4)),
+                .shadow(.drop(color: .primary.opacity(0.2), radius: 2)),
             in: .rect(cornerRadius: 15)
         )
     }
@@ -93,7 +93,7 @@ struct DogWalkingMemoryView: View {
     private func MapView(memory: DogWalkingMemory) -> some View {
         let cameraPosition = getCameraPosition(coordinates: memory.coordinates)
         
-        Map(initialPosition: cameraPosition) {
+        Map(initialPosition: cameraPosition, interactionModes: []) {
             if !memory.coordinates.isEmpty {
                 let coordinates = memory.coordinates.map { $0.toCLLocationCoordinate2D() }
                 
@@ -115,6 +115,7 @@ struct DogWalkingMemoryView: View {
             
             Spacer()
         }
+        .padding(.leading)
     }
     
     private func getCameraPosition(coordinates: [Coordinate]) -> MapCameraPosition {

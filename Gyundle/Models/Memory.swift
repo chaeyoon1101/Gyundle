@@ -27,8 +27,10 @@ struct DogWalkingMemory: Memorable {
     var uid: String = UUID().uuidString
     var day: String
     var date: Date
-    var endTime: Date
+    var title: String
+    var time: String
     var distance: String
+    var speed: String
     var calories: String
     var coordinates: [Coordinate]
     var markers: [DogWalkingMarker]
@@ -37,8 +39,10 @@ struct DogWalkingMemory: Memorable {
         return DogWalkingMemory(
             day: "",
             date: Date(),
-            endTime: Date(),
+            title: "",
+            time: "",
             distance: "",
+            speed: "",
             calories: "",
             coordinates: .init(),
             markers: []

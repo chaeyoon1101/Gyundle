@@ -43,7 +43,7 @@ struct PhotoGridView: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: size.width)
+                        .frame(width: size.width, height: size.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .contentShape(RoundedRectangle(cornerRadius: 8))
                 }

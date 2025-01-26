@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var dailyMemoryViewModel = DailyMemoryViewModel()
-    @StateObject private var dogWalkingMemoryViewModel = DogWalkingMemoryViewModel()
-    @StateObject private var calendarViewModel = CalendarViewModel()
+    @EnvironmentObject private var calendarViewModel: CalendarViewModel
+    @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
+    @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     
     // MARK: View 상태 관리
     @State private var showingMemorizeView: Bool = false
@@ -1242,10 +1242,6 @@ struct HomeView: View {
         }
         .environmentObject(dailyMemoryViewModel)
         .environmentObject(dogWalkingMemoryViewModel)
-        .task {
-            await dailyMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
-            await dogWalkingMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
-        }
     }
     
     @ViewBuilder
@@ -1319,5 +1315,7 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
-        .environmentObject(AuthViewModel())
+        .environmentObject(DogWalkingMemoryViewModel())
+        .environmentObject(DailyMemoryViewModel())
+        .environmentObject(CalendarViewModel())
 }

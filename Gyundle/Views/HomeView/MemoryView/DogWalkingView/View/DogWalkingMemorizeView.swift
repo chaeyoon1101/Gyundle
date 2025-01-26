@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 struct DogWalkingMemorizeView: View {
     @Environment(\.dismiss) private var dismiss
@@ -7,44 +8,53 @@ struct DogWalkingMemorizeView: View {
     @StateObject private var dogWalkingMemorizeViewModel = DogWalkingMemorizeViewModel()
     @StateObject private var locationDataManager = LocationDataManager()
     
+    @State private var isStopped: Bool = false
     @State private var isMapExpanded: Bool = false
     @State private var showMarkingView: Bool = false
     
     let date: Date
     
     var body: some View {
-        ZStack {
-            Self.background(color: ColorConstant.bgPrimary)
-            
-            VStack {
-                DogWalkingMapView(isMapExpanded: $isMapExpanded)
-                    .ignoresSafeArea()
-                    .frame(maxHeight: .infinity)
+        NavigationStack {
+            ZStack {
+                Self.background(color: ColorConstant.bgPrimary)
                 
-                if !isMapExpanded {
-                    VStack(spacing: 15) {
-                        DogWalkingDataView()
-                        
-                        HStack(spacing: 45) {
-                            DogWalkingStopButton(onStopped: {
-                                uploadMemorize()
-                            })
+                VStack {
+                    DogWalkingMapView(isMapExpanded: $isMapExpanded)
+                        .ignoresSafeArea()
+                        .frame(maxHeight: .infinity)
+                    
+                    if !isMapExpanded {
+                        VStack(spacing: 15) {
+                            DogWalkingDataView()
                             
-                            DogWalkingMarkingButton()
+                            HStack(spacing: 45) {
+                                DogWalkingStopButton(onStopped: {
+                                    setupSelectedMemory()
+                                    isStopped = true
+                                })
+                                
+                                DogWalkingMarkingButton()
+                            }
+                            .frame(maxHeight: .infinity, alignment: .center)
                         }
-                        .frame(maxHeight: .infinity, alignment: .center)
+                        .align(.top)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(ColorConstant.bgSecondary)
+                                .ignoresSafeArea()
+                        )
+                        .padding(.horizontal, 4)
                     }
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(ColorConstant.bgSecondary)
-                            .ignoresSafeArea()
-                    )
-                    .padding(.horizontal, 4)
                 }
             }
-            // TODO: progressView 보여줄건지 고민
-            .progressView(isShowing: $dogWalkingMemoryViewModel.isUploading)
+            .onChange(of: isStopped, initial: true) { _, newValue in
+                if newValue {
+                    locationDataManager.stopUpdatingLocation()
+                } else {
+                    locationDataManager.startUpdatingLocation()
+                }
+            }
             .onReceive(dogWalkingMemorizeViewModel.timerPublisher) { _ in
                 dogWalkingMemorizeViewModel.timeSeconds += 1
                 
@@ -58,6 +68,10 @@ struct DogWalkingMemorizeView: View {
                     .presentationBackgroundInteraction(.enabled(upThrough: .medium))
                     .presentationBackground(ColorConstant.bgContent)
             }
+            .navigationDestination(isPresented: $isStopped) {
+                DogWalkingSummaryView()
+            }
+            .toolbar(.hidden, for: .navigationBar)
         }
         .environmentObject(dogWalkingMemorizeViewModel)
         .environmentObject(locationDataManager)
@@ -78,11 +92,38 @@ struct DogWalkingMemorizeView: View {
             .padding(.bottom, 30)
             
             HStack {
-                DogWalkingDataContent(data: dogWalkingMemorizeViewModel.dogWalkingDistance, subtitle: "산책 거리")
+                VStack {
+                    Text(dogWalkingMemorizeViewModel.dogWalkingDistance + "km")
+                        .font(.title3)
+                        .bold()
+                    
+                    Text("산책 거리")
+                        .font(.subheadline)
+                        .foregroundStyle(ColorConstant.fgSecondary)
+                }
+                .frame(maxWidth: .infinity)
                 
-                DogWalkingDataContent(data: dogWalkingMemorizeViewModel.dogWalkingSpeed, subtitle: "산책 속도")
+                VStack {
+                    Text(dogWalkingMemorizeViewModel.dogWalkingSpeed + "km/h")
+                        .font(.title3)
+                        .bold()
+                    
+                    Text("산책 속도")
+                        .font(.subheadline)
+                        .foregroundStyle(ColorConstant.fgSecondary)
+                }
+                .frame(maxWidth: .infinity)
                 
-                DogWalkingDataContent(data: dogWalkingMemorizeViewModel.dogWalkingCalories, subtitle: "칼로리 소모량")
+                VStack {
+                    Text(dogWalkingMemorizeViewModel.dogWalkingCalories + "kcal")
+                        .font(.title3)
+                        .bold()
+                    
+                    Text("칼로리 소모")
+                        .font(.subheadline)
+                        .foregroundStyle(ColorConstant.fgSecondary)
+                }
+                .frame(maxWidth: .infinity)
             }
         }
         .frame(maxWidth: .infinity)
@@ -116,33 +157,56 @@ struct DogWalkingMemorizeView: View {
             Image(systemName: "square.and.pencil")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .foregroundStyle(ColorConstant.fgPrimary)
+                .foregroundStyle(ColorConstant.accent)
                 .frame(width: 40, height: 40)
                 .frame(width: 92, height: 92)
                 .background(
                     Circle()
-                        .strokeBorder(ColorConstant.fgPrimary, style: .init(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                        .strokeBorder(
+                            ColorConstant.accent,
+                            style: .init(lineWidth: 2, lineCap: .round, lineJoin: .round)
+                        )
                 )
         }
     }
     
-    private func uploadMemorize() {
+    private func setupSelectedMemory() {
         let coordinates = locationDataManager.coordinates.map { $0.toCoordinate() }
         dogWalkingMemoryViewModel.selectedMemory?.coordinates = coordinates
         dogWalkingMemoryViewModel.selectedMemory?.day = date.toDay()
-        dogWalkingMemoryViewModel.selectedMemory?.endTime = Date()
+        dogWalkingMemoryViewModel.selectedMemory?.time = dogWalkingMemorizeViewModel.dogWalkingTime
         dogWalkingMemoryViewModel.selectedMemory?.calories = dogWalkingMemorizeViewModel.dogWalkingCalories
-        dogWalkingMemoryViewModel.selectedMemory?.distance = dogWalkingMemorizeViewModel.dogWalkingDistance
+        dogWalkingMemoryViewModel.selectedMemory?.distance =         dogWalkingMemorizeViewModel.dogWalkingDistance
+        dogWalkingMemoryViewModel.selectedMemory?.speed = dogWalkingMemorizeViewModel.dogWalkingSpeed
         dogWalkingMemoryViewModel.selectedMemory?.markers = dogWalkingMemorizeViewModel.dogWalkingMarkers
+    }
+    
+    private func getCameraPosition(coordinates: [CLLocationCoordinate2D]) -> MapCameraPosition {
+        let latitudes = coordinates.compactMap { Double($0.latitude) }
+        let longitudes = coordinates.compactMap { Double($0.longitude) }
         
-        Task {
-            await dogWalkingMemoryViewModel.uploadMemory()
-            
-            await MainActor.run {
-                Haptic.notification(type: .success)
-                dismiss()
-            }
-        }
+        let minLatitude = latitudes.min() ?? 0
+        let maxLatitude = latitudes.max() ?? 0
+        let minLongitude = longitudes.min() ?? 0
+        let maxLongitude = longitudes.max() ?? 0
+        
+        
+        // 카메라 중심점
+        let center = CLLocationCoordinate2D(
+            latitude: (minLatitude + maxLatitude) / 2,
+            longitude: (minLongitude + maxLongitude) / 2
+        )
+        
+        
+        // 여유 간격
+        let span = MKCoordinateSpan(
+            latitudeDelta: (maxLatitude - minLatitude) * 1.75,
+            longitudeDelta: (maxLongitude - minLongitude) * 1.75
+        )
+        
+        return MapCameraPosition.region(
+            .init(center: center, span: span)
+        )
     }
 }
 

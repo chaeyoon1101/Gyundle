@@ -12,6 +12,9 @@ enum Tab {
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
+    @StateObject private var dailyMemoryViewModel = DailyMemoryViewModel()
+    @StateObject private var dogWalkingMemoryViewModel = DogWalkingMemoryViewModel()
+    @StateObject private var calendarViewModel = CalendarViewModel()
     @State private var selection: Tab = .homeView
     
     var body: some View {
@@ -28,6 +31,13 @@ struct ContentView: View {
             case .signUp:
                 SignUpView()
             }
+        }
+        .environmentObject(calendarViewModel)
+        .environmentObject(dailyMemoryViewModel)
+        .environmentObject(dogWalkingMemoryViewModel)
+        .task {
+            await dailyMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
+            await dogWalkingMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
         }
     }
     

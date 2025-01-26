@@ -62,4 +62,23 @@ extension View {
         return windowScene.windows.first?.safeAreaInsets.top ?? 0
     }
     
+    // MARK: Modifiers
+    func onFirstAppear(_ action: @escaping () -> ()) -> some View {
+        self
+            .modifier(FirstAppear(action: action))
+    }
+}
+
+fileprivate struct FirstAppear: ViewModifier {
+    let action: () -> ()
+    @State private var hasAppeared = false
+    
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                guard !hasAppeared else { return }
+                hasAppeared = true
+                action()
+            }
+    }
 }

@@ -55,7 +55,7 @@ struct DogWalkingStopButton: View {
                     
                     pressingTime += 0.1
                     withAnimation {
-                        scale += 0.05
+                        scale += 0.03
                     }
                 }
             }

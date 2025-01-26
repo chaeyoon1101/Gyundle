@@ -35,7 +35,7 @@ class FirebaseManager {
             throw AuthError.userNotFound
         }
         
-        let memoryType = memory is DailyMemory ? "dailyMemories" : "WalkingMemories"
+        let memoryType = memory is DailyMemory ? "dailyMemories" : "dogWalkingMemories"
         let userRef = db.collection("users").document(userID)
         
         let encoder = Firestore.Encoder()

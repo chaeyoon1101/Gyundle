@@ -26,8 +26,11 @@ class DogWalkingMemoryViewModel: ObservableObject {
             try await FirebaseManager.shared.uploadMemory(selectedMemory)
             
             print("Dog Walking Memory Upload 성공:", selectedMemory.uid)
+            
             let key = convertToKey(from: selectedMemory.date)
-            dogWalkingMemories[key]?.append(selectedMemory)
+            await MainActor.run {
+                dogWalkingMemories[key, default: []].append(selectedMemory)
+            }
         } catch {
             print("Dog Walking Memory Upload 실패:", error.localizedDescription)
         }
@@ -43,7 +46,6 @@ class DogWalkingMemoryViewModel: ObservableObject {
             let fetchedMemories = try await FirebaseManager.shared.fetchMemories(from: key)
             
             await MainActor.run {
-                print(fetchedMemories, key)
                 if let dogWalkingMemories = fetchedMemories.dogWalkingMemories {
                     self.dogWalkingMemories[key] = dogWalkingMemories
                 }
@@ -57,10 +59,11 @@ class DogWalkingMemoryViewModel: ObservableObject {
     
     func getMemories(from date: Date) -> [DogWalkingMemory]? {
         let key = convertToKey(from: date)
-        print(dogWalkingMemories)
+        
         guard let memories = dogWalkingMemories[key] else { return nil }
         
-        return memories.filter { $0.day == date.toDay() }
+        let filteredMemories = memories.filter { $0.day == date.toDay() }
+        return filteredMemories.isEmpty ? nil : filteredMemories
     }
     
     @MainActor

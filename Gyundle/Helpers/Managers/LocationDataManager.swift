@@ -17,7 +17,7 @@ class LocationDataManager: NSObject, ObservableObject {
     }
     
     deinit {
-        locationManager.stopUpdatingLocation()
+        stopUpdatingLocation()
     }
     
     private func setupLocationManager() {
@@ -25,8 +25,14 @@ class LocationDataManager: NSObject, ObservableObject {
         locationManager.allowsBackgroundLocationUpdates = true
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.pausesLocationUpdatesAutomatically = false
-        
+    }
+    
+    func startUpdatingLocation() {
         locationManager.startUpdatingLocation()
+    }
+    
+    func stopUpdatingLocation() {
+        locationManager.stopUpdatingLocation()
     }
 }
 
