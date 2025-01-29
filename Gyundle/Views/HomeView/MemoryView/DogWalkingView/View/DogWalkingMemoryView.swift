@@ -4,7 +4,7 @@ import MapKit
 struct DogWalkingMemoryView: View {
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     
-    var date: Date
+    let date: Date
     
     var body: some View {
         if let memories = dogWalkingMemoryViewModel.getMemories(from: date) {

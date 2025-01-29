@@ -32,13 +32,14 @@ class DailyMemoryViewModel: ObservableObject {
             
             print("Memory 업로드 성공")
             await MainActor.run {
+                let key = convertToKey(from: memory.date)
+                dailyMemories[key]?.append(memory)
                 isPresentedMemorizeView = false
             }
         } catch {
             print("Memory 업로드 실패:", error.localizedDescription)
         }
         
-        await fetchMemories(from: memory.date)
         await resetSelectedMemory()
     }
     
@@ -51,16 +52,15 @@ class DailyMemoryViewModel: ObservableObject {
         do {
             try await FirebaseManager.shared.deleteMemory(memory)
             
-//            await MainActor.run {
-//                let key = convertToKey(from: memory.date)
-//                dailyMemories[key]?.removeAll(where: { $0.uid == memory.uid } )
-//            }
+            await MainActor.run {
+                let key = convertToKey(from: memory.date)
+                dailyMemories[key]?.removeAll(where: { $0.uid == memory.uid } )
+            }
             print("Memory 삭제 성공")
         } catch {
             print("Memory 삭제 실패:", error.localizedDescription)
         }
         
-        await fetchMemories(from: memory.date)
         await resetSelectedMemory()
     }
     
@@ -75,17 +75,16 @@ class DailyMemoryViewModel: ObservableObject {
             
             await MainActor.run {
                 isPresentedMemorizeView = false
+                
+                let key = convertToKey(from: memory.date)
+                let updatedMemory = dailyMemories[key]?.map { $0.uid != memory.uid ? $0 : memory }
+                dailyMemories[key] = updatedMemory
             }
-//            await MainActor.run {
-//                let key = convertToKey(from: memory.date)
-//                dailyMemories[key] = dailyMemories[key]?.map( { $0.uid == memory.uid ? memory : $0 } )
-//            }
-            print("Memory 삭제 성공")
+            print("Memory 업데이트 성공")
         } catch {
-            print("Memory 삭제 실패:", error.localizedDescription)
+            print("Memory 업데이트 실패:", error.localizedDescription)
         }
         
-        await fetchMemories(from: memory.date)
         await resetSelectedMemory()
     }
     

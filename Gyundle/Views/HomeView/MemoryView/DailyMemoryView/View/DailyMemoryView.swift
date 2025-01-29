@@ -4,40 +4,42 @@ struct DailyMemoryView: View {
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     
     @State private var isDetailViewPresented: Bool = false
-    var memory: DailyMemory
+    let date: Date
     
     var body: some View {
-        HeaderView()
-            .padding(.bottom, -20)
-        
-        VStack {
-            if !memory.photosURL.isEmpty {
-                PhotoGridView(photosURL: memory.photosURL)
-                    .frame(height: 120)
+        if let memory = dailyMemoryViewModel.getMemory(from: date) {
+            HeaderView(memory)
+                .padding(.bottom, -20)
+            
+            VStack {
+                if !memory.photosURL.isEmpty {
+                    PhotoGridView(photosURL: memory.photosURL)
+                        .frame(height: 120)
+                        .padding(4)
+                }
+                
+                MemoryContentView(memory)
                     .padding(4)
             }
-            
-            MemoryContentView()
-                .padding(4)
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(
-                    ColorConstant.bgContent
-                        .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
-                )
-                .onTapGesture {
-                    dailyMemoryViewModel.selectedMemory = memory
-                    isDetailViewPresented = true
-                }
-        )
-        .sheet(isPresented: $isDetailViewPresented) {
-            DailyMemoryDetailView(isPresented: $isDetailViewPresented)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        ColorConstant.bgContent
+                            .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
+                    )
+                    .onTapGesture {
+                        dailyMemoryViewModel.selectedMemory = memory
+                        isDetailViewPresented = true
+                    }
+            )
+            .sheet(isPresented: $isDetailViewPresented) {
+                DailyMemoryDetailView(isPresented: $isDetailViewPresented)
+            }
         }
     }
     
     @ViewBuilder
-    func HeaderView() -> some View {
+    func HeaderView(_ memory: DailyMemory) -> some View {
         HStack {
             Image(systemName: "dog.fill")
                 .imageScale(.medium)
@@ -52,7 +54,7 @@ struct DailyMemoryView: View {
     }
     
     @ViewBuilder
-    func MemoryContentView() -> some View {
+    func MemoryContentView(_ memory: DailyMemory) -> some View {
         VStack(alignment: .leading) {
             Text(memory.text)
                 .lineLimit(5)

@@ -18,13 +18,9 @@ struct HomeView: View {
                         .environmentObject(calendarViewModel)
                     
                     let selectedDate = calendarViewModel.selectedDate
-                    
                     DogWalkingMemoryView(date: selectedDate)
-//
                     
-                    if let dailyMemory = dailyMemoryViewModel.getMemory(from: selectedDate) {
-                        DailyMemoryView(memory: dailyMemory)
-                    }
+                    DailyMemoryView(date: selectedDate)
                 }
             }
             .blur(radius: showingMemorizeView ? 3 : 0)
