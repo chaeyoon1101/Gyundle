@@ -41,9 +41,10 @@ class FirebaseManager {
         let encoder = Firestore.Encoder()
         let data = try encoder.encode(memory)
         
+        let key = MemoryKey.convertToKey(from: memory.date)
         let memoriesRef = userRef
                             .collection("memories")
-                            .document(memory.date.toYearMonth())
+                            .document(key.toString())
         
         try await memoriesRef.setData(
             [memoryType: FieldValue.arrayUnion([data])],
@@ -58,9 +59,11 @@ class FirebaseManager {
         }
         
         let userRef = db.collection("users").document(userID)
+        
+        let key = MemoryKey.convertToKey(from: memory.date)
         let memoriesRef = userRef
                             .collection("memories")
-                            .document(memory.date.toYearMonth())
+                            .document(key.toString())
         
         let memoriesDocument = try await memoriesRef.getDocument()
         
@@ -96,9 +99,11 @@ class FirebaseManager {
         }
         
         let userRef = db.collection("users").document(userID)
+        
+        let key = MemoryKey.convertToKey(from: memory.date)
         let memoriesRef = userRef
                             .collection("memories")
-                            .document(memory.date.toYearMonth())
+                            .document(key.toString())
         
         
         let memoriesDocument = try await memoriesRef.getDocument()
@@ -127,7 +132,7 @@ class FirebaseManager {
         try await memoriesRef.updateData(encodedData)
     }
     
-    func fetchMemories(from yearMonth: String) async throws -> Memory {
+    func fetchMemories(from key: MemoryKey) async throws -> Memory {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("로그인 된 유저 정보가 없음")
             throw AuthError.userNotFound
@@ -136,7 +141,7 @@ class FirebaseManager {
         let userRef = db.collection("users").document(userID)
         let memoriesRef = userRef
                             .collection("memories")
-                            .document(yearMonth)
+                            .document(key.toString())
         
         let document = try await memoriesRef.getDocument()
         let data = try document.data(as: Memory.self)

@@ -170,7 +170,7 @@ struct DailyMemorizeView: View {
     
     // 작성하고있는 데이터의 uuid가 이미 존재한다면 편집 중 그렇지 않으면 새로 작성 중
     private func isEditing() -> Bool {
-        let key = date.toYearMonth()
+        let key = MemoryKey.convertToKey(from: date)
          
         let containsSelectedMemory = dailyMemoryViewModel.dailyMemories[key]?.contains(
             where: { $0.uid == dailyMemoryViewModel.selectedMemory?.uid }

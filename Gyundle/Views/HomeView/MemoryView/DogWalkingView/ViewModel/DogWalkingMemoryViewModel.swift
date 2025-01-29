@@ -8,7 +8,7 @@
 import Foundation
 
 class DogWalkingMemoryViewModel: ObservableObject {
-    @Published var dogWalkingMemories: [String: [DogWalkingMemory]] = [:]
+    @Published var dogWalkingMemories: [MemoryKey: [DogWalkingMemory]] = [:]
     
     @Published var selectedMemory: DogWalkingMemory?
     @Published var isUploading: Bool = false
@@ -29,7 +29,7 @@ class DogWalkingMemoryViewModel: ObservableObject {
             
             print("Dog Walking Memory Upload 성공:", selectedMemory.uid)
             
-            let key = convertToKey(from: selectedMemory.date)
+            let key = MemoryKey.convertToKey(from: selectedMemory.date)
             await MainActor.run {
                 dogWalkingMemories[key, default: []].append(selectedMemory)
             }
@@ -48,7 +48,7 @@ class DogWalkingMemoryViewModel: ObservableObject {
         }
         
         
-        let key = convertToKey(from: selectedMemory.date)
+        let key = MemoryKey.convertToKey(from: selectedMemory.date)
         guard let targetMemory = dogWalkingMemories[key]?.first(where: { $0.uid == selectedMemory.uid }) else {
             print("업데이트할 Memory가 없음")
             return
@@ -70,7 +70,7 @@ class DogWalkingMemoryViewModel: ObservableObject {
     }
     
     func fetchMemories(from date: Date) async {
-        let key = convertToKey(from: date)
+        let key = MemoryKey.convertToKey(from: date)
         
         do {
             let fetchedMemories = try await FirebaseManager.shared.fetchMemories(from: key)
@@ -88,7 +88,7 @@ class DogWalkingMemoryViewModel: ObservableObject {
     }
     
     func getMemories(from date: Date) -> [DogWalkingMemory]? {
-        let key = convertToKey(from: date)
+        let key = MemoryKey.convertToKey(from: date)
         
         guard let memories = dogWalkingMemories[key] else { return nil }
         
@@ -104,9 +104,5 @@ class DogWalkingMemoryViewModel: ObservableObject {
     @MainActor
     private func changeUploadState(to state: Bool) {
         isUploading = state
-    }
-    
-    private func convertToKey(from date: Date) -> String {
-        return date.toYearMonth()
     }
 }
