@@ -11,8 +11,6 @@ struct DogWalkingMemoryView: View {
             HeaderView()
                 .padding(.bottom, -20)
 
-            let _ = print(memories.map { $0.title }, "View")
-            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(memories, id: \.uid) { memory in

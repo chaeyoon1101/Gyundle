@@ -18,6 +18,7 @@ struct HomeView: View {
                         .environmentObject(calendarViewModel)
                     
                     let selectedDate = calendarViewModel.selectedDate
+                    
                     DogWalkingMemoryView(date: selectedDate)
                     
                     DailyMemoryView(date: selectedDate)

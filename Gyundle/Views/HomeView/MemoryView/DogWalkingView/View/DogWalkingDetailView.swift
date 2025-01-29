@@ -20,9 +20,16 @@ struct DogWalkingDetailView: View {
                 VStack(alignment: .leading) {
                     TitleTextField()
                     
-                    Text(memory.time)
-                        .font(.system(size: 64, weight: .bold))
-                        .padding(.bottom, 15)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(memory.time)
+                            .font(.system(size: 64, weight: .bold))
+                        
+                        Text(getDogWalkingTime(start: memory.date, for: memory
+                            .time))
+                            .font(.subheadline)
+                            .foregroundStyle(ColorConstant.fgSecondary)
+                    }
+                    .padding(.bottom, 15)
                     
                     HStack {
                         VStack(alignment: .leading) {
@@ -66,11 +73,14 @@ struct DogWalkingDetailView: View {
                         .clipShape(.rect(cornerRadius: 15))
                         .frame(maxHeight: .infinity)
                 }
+                .navigationTitle(memory.date.formatting("M월 d일 산책"))
+                .navigationBarTitleDisplayMode(.inline)
                 .padding()
             }
         }
         .toolbarRole(.editor)
         .toolbar(.hidden, for: .tabBar)
+
     }
     
     @ViewBuilder
@@ -264,6 +274,25 @@ struct DogWalkingDetailView: View {
         )
     }
     
+    private func getDogWalkingTime(start: Date, for time: String) -> String {
+        var timeSeconds: TimeInterval = 0
+        var timeMultiplier = 1.0
+        
+        for timeString in time.split(separator: ":").reversed() {
+            if let timeValue = Double(String(timeString)) {
+                timeSeconds += timeValue * timeMultiplier
+            }
+            timeMultiplier *= 60
+        }
+        
+        let end = start.addingTimeInterval(timeSeconds)
+        
+        let startString = start.formatting("aa h:mm")
+        let endString = end.formatting("aa h:mm")
+        
+        return "\(startString) ~ \(endString)"
+    }
+    
     private var defaultTitle: String {
         let date = dogWalkingMemoryViewModel.selectedMemory?.date ?? Date()
         let hour = Calendar.current.component(.hour, from: date)
@@ -286,8 +315,9 @@ struct DogWalkingDetailView: View {
 }
 
 #Preview {
-    HomeView()
-        .environmentObject(DogWalkingMemoryViewModel())
-        .environmentObject(DailyMemoryViewModel())
-        .environmentObject(CalendarViewModel())
+    let vm = DogWalkingMemoryViewModel()
+    let _ = vm.selectedMemory = DogWalkingMemory.defaultMemory()
+    
+    DogWalkingDetailView()
+        .environmentObject(vm)
 }
