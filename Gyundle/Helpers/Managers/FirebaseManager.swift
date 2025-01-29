@@ -124,7 +124,6 @@ class FirebaseManager {
         let encoder = Firestore.Encoder()
         let encodedData = try encoder.encode(updatedMemory)
         
-        print(updatedMemory)
         try await memoriesRef.updateData(encodedData)
     }
     

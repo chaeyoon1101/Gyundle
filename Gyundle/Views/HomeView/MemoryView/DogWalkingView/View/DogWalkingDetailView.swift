@@ -1,19 +1,15 @@
 //
-//  DogWalkingSummaryView.swift
+//  DogWalkingDetailView.swift
 //  Gyundle
 //
-//  Created by 임채윤 on 1/23/25.
+//  Created by 임채윤 on 1/27/25.
 //
 
 import SwiftUI
 import MapKit
-import CoreLocation
 
-struct DogWalkingSummaryView: View {
-    @Environment(\.dismiss) var dismiss
-    
+struct DogWalkingDetailView: View {
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
-
     @FocusState var isFocused: Bool
     
     var body: some View {
@@ -73,30 +69,8 @@ struct DogWalkingSummaryView: View {
                 .padding()
             }
         }
-        .onTapGesture {
-            isFocused = false
-        }
-        .ignoresSafeArea(.keyboard)
         .toolbarRole(.editor)
-        .navigationTitle("추가 정보 입력")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if !dogWalkingMemoryViewModel.isUploading {
-                    Button("완료") {
-                        Task {
-                            await dogWalkingMemoryViewModel.uploadMemory()
-                            dogWalkingMemoryViewModel.showMemorizeView = false
-                        }
-                    }
-                    .foregroundStyle(ColorConstant.accent)
-                    .bold()
-                } else {
-                    ProgressView()
-                }
-            }
-        }
-        
+        .toolbar(.hidden, for: .tabBar)
     }
     
     @ViewBuilder
@@ -119,9 +93,16 @@ struct DogWalkingSummaryView: View {
                 .font(.system(size: 24))
                 .lineLimit(2)
                 .focused($isFocused)
-                .onChange(of: isFocused, initial: true) { _, newValue in
-                    if !newValue, dogWalkingMemoryViewModel.selectedMemory?.title == "" {
+                .onChange(of: isFocused) { _, newValue in
+                    guard !newValue,
+                          let title = dogWalkingMemoryViewModel.selectedMemory?.title else { return }
+                    
+                    if title.isEmpty {
                         dogWalkingMemoryViewModel.selectedMemory?.title = defaultTitle
+                    }
+                    
+                    Task {
+                        await dogWalkingMemoryViewModel.updateMemory()
                     }
                 }
                 // 키보드 done 버튼 누르면 TextField focus 해제
@@ -284,7 +265,7 @@ struct DogWalkingSummaryView: View {
     }
     
     private var defaultTitle: String {
-        let date = Date()
+        let date = dogWalkingMemoryViewModel.selectedMemory?.date ?? Date()
         let hour = Calendar.current.component(.hour, from: date)
         
         return switch hour {
@@ -304,13 +285,9 @@ struct DogWalkingSummaryView: View {
     }
 }
 
-
-
 #Preview {
-    let dogWalkingMemoryViewModel = DogWalkingMemoryViewModel()
-    
-    let _ = dogWalkingMemoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
-
-    DogWalkingSummaryView()
-        .environmentObject(dogWalkingMemoryViewModel)
+    HomeView()
+        .environmentObject(DogWalkingMemoryViewModel())
+        .environmentObject(DailyMemoryViewModel())
+        .environmentObject(CalendarViewModel())
 }

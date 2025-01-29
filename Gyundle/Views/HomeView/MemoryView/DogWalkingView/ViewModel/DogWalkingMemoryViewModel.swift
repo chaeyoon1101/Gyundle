@@ -10,10 +10,12 @@ import Foundation
 class DogWalkingMemoryViewModel: ObservableObject {
     @Published var dogWalkingMemories: [String: [DogWalkingMemory]] = [:]
     
-    @Published var isPresentedMemorizeView: Bool = false
-    
     @Published var selectedMemory: DogWalkingMemory?
     @Published var isUploading: Bool = false
+    
+    // View Present Properties
+    @Published var showMemorizeView: Bool = false
+    @Published var showDetailView: Bool = false
     
     func uploadMemory() async {
         guard let selectedMemory else {
@@ -37,6 +39,34 @@ class DogWalkingMemoryViewModel: ObservableObject {
         
         await changeUploadState(to: false)
         await resetSelectedMemory()
+    }
+    
+    func updateMemory() async {
+        guard let selectedMemory else {
+            print("Selected Memory가 존재하지 않음")
+            return
+        }
+        
+        
+        let key = convertToKey(from: selectedMemory.date)
+        guard let targetMemory = dogWalkingMemories[key]?.first(where: { $0.uid == selectedMemory.uid }) else {
+            print("업데이트할 Memory가 없음")
+            return
+        }
+        
+        guard targetMemory.title != selectedMemory.title else { return }
+        
+        do {
+            await MainActor.run {
+                let updatedMemories = dogWalkingMemories[key]?.map( { $0.uid != selectedMemory.uid ? $0 : selectedMemory } )
+                
+                self.dogWalkingMemories[key] = updatedMemories
+            }
+            
+            try await FirebaseManager.shared.updateMemory(selectedMemory)
+        } catch {
+            print("Dog Walking Memory Update 실패:", error.localizedDescription)
+        }
     }
     
     func fetchMemories(from date: Date) async {

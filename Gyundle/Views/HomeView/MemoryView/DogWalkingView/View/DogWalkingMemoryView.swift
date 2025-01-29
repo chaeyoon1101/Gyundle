@@ -3,25 +3,31 @@ import MapKit
 
 struct DogWalkingMemoryView: View {
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
-    var memories: [DogWalkingMemory]
-
+    
+    var date: Date
+    
     var body: some View {
-        HeaderView()
-            .padding(.bottom, -20)
+        if let memories = dogWalkingMemoryViewModel.getMemories(from: date) {
+            HeaderView()
+                .padding(.bottom, -20)
 
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                ForEach(memories, id: \.uid) { memory in
-                    CardView(memory: memory)
-                        .onTapGesture {
-                            print(memory.uid)
-                        }
+            let _ = print(memories.map { $0.title }, "View")
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(memories, id: \.uid) { memory in
+                        CardView(memory: memory)
+                            .onTapGesture {
+                                dogWalkingMemoryViewModel.selectedMemory = memory
+                                dogWalkingMemoryViewModel.showDetailView = true
+                            }
+                    }
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
+            .scrollClipDisabled()
+            .scrollTargetBehavior(.viewAligned)
         }
-        .scrollClipDisabled()
-        .scrollTargetBehavior(.viewAligned)
     }
     
     @ViewBuilder
@@ -35,7 +41,7 @@ struct DogWalkingMemoryView: View {
                 VStack(alignment: .leading) {
                     Text(memory.title)
                         .font(.system(size: 18))
-                    Text(memory.date.formatting("aa M:dd"))
+                    Text(memory.date.formatting("aa h:mm"))
                         .font(.footnote)
                         .foregroundStyle(ColorConstant.fgSecondary)
                 }
