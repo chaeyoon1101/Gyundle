@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol Memorable: Codable, Hashable {
+protocol Memorable: Codable, Hashable, Equatable {
     var uid: String { get }
     var day: String { get }
     var date: Date { get }
@@ -16,10 +16,6 @@ protocol Memorable: Codable, Hashable {
 }
 
 extension Memorable {
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.uid == rhs.uid
-    }
-    
     func hash(into hasher: inout Hasher) {
         hasher.combine(uid)
     }

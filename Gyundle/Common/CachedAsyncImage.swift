@@ -17,7 +17,6 @@ struct CachedAsyncImage<Content>: View where Content: View {
     }
     
     var body: some View {
-        
         if let cachedImage = ImageCacheManager.shared.getImage(forKey: url.absoluteString) {
             content(.success(cachedImage))
         } else {

@@ -12,6 +12,7 @@ struct DogWalkingMemorizeView: View {
     @State private var isMapExpanded: Bool = false
     @State private var showMarkingView: Bool = false
     
+    @State var memory: DogWalkingMemory = .defaultMemory()
     let date: Date
     
     var body: some View {
@@ -30,7 +31,7 @@ struct DogWalkingMemorizeView: View {
                             
                             HStack(spacing: 45) {
                                 DogWalkingStopButton(onStopped: {
-                                    setupSelectedMemory()
+                                    setupMemory()
                                     isStopped = true
                                 })
                                 
@@ -63,13 +64,24 @@ struct DogWalkingMemorizeView: View {
                 )
             }
             .sheet(isPresented: $showMarkingView) {
-                DogWalkingMarkingView(isEditing: true)
-                    .presentationDetents([.medium, .large])
-                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
-                    .presentationBackground(ColorConstant.bgContent)
+                let coordinate = locationDataManager.currentLocation?.coordinate.toCoordinate()
+                
+                let marker = DogWalkingMarker(coordinate: coordinate ?? .init())
+                
+                DogWalkingMarkingView(marker: marker) { action in
+                    switch action {
+                    case .upsert(let marker):
+                        dogWalkingMemorizeViewModel.upsertMarker(marker)
+                    case .delete(let marker):
+                        dogWalkingMemorizeViewModel.deleteMarker(marker)
+                    }
+                }
+                .presentationDetents([.medium, .large])
+                .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+                .presentationBackground(ColorConstant.bgSecondary)
             }
             .navigationDestination(isPresented: $isStopped) {
-                DogWalkingSummaryView()
+                DogWalkingSummaryView(memory: $memory)
             }
             .toolbar(.hidden, for: .navigationBar)
         }
@@ -147,11 +159,6 @@ struct DogWalkingMemorizeView: View {
     @ViewBuilder
     private func DogWalkingMarkingButton() -> some View {
         Button {
-            dogWalkingMemorizeViewModel.selectedMarker = DogWalkingMarker(
-                coordinate: locationDataManager.currentLocation?.coordinate.toCoordinate() ?? .init(),
-                memo: ""
-            )
-            
             showMarkingView = true
         } label: {
             Image(systemName: "square.and.pencil")
@@ -170,15 +177,25 @@ struct DogWalkingMemorizeView: View {
         }
     }
     
-    private func setupSelectedMemory() {
+    private func setupMemory() {
+        let uid = memory.uid
+        let day = date.toDay()
+        let date = memory.date
+        let title = memory.title
         let coordinates = locationDataManager.coordinates.map { $0.toCoordinate() }
-        dogWalkingMemoryViewModel.selectedMemory?.coordinates = coordinates
-        dogWalkingMemoryViewModel.selectedMemory?.day = date.toDay()
-        dogWalkingMemoryViewModel.selectedMemory?.time = dogWalkingMemorizeViewModel.dogWalkingTime
-        dogWalkingMemoryViewModel.selectedMemory?.calories = dogWalkingMemorizeViewModel.dogWalkingCalories
-        dogWalkingMemoryViewModel.selectedMemory?.distance =         dogWalkingMemorizeViewModel.dogWalkingDistance
-        dogWalkingMemoryViewModel.selectedMemory?.speed = dogWalkingMemorizeViewModel.dogWalkingSpeed
-        dogWalkingMemoryViewModel.selectedMemory?.markers = dogWalkingMemorizeViewModel.dogWalkingMarkers
+        
+        memory = DogWalkingMemory(
+            uid: uid,
+            day: day,
+            date: date,
+            title: title,
+            time: dogWalkingMemorizeViewModel.dogWalkingTime,
+            distance: dogWalkingMemorizeViewModel.dogWalkingDistance,
+            speed: dogWalkingMemorizeViewModel.dogWalkingSpeed,
+            calories: dogWalkingMemorizeViewModel.dogWalkingCalories,
+            coordinates: coordinates,
+            markers: dogWalkingMemorizeViewModel.dogWalkingMarkers
+        )
     }
     
     private func getCameraPosition(coordinates: [CLLocationCoordinate2D]) -> MapCameraPosition {

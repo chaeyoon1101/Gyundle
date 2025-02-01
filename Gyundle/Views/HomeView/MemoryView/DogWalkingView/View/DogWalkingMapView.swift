@@ -10,7 +10,7 @@ struct DogWalkingMapView: View {
         followsHeading: true,
         fallback: .automatic
     )
-    @State private var showMarkerDetailView: Bool = false
+    @State private var selectedMarker: DogWalkingMarker? = nil
     
     @Binding var isMapExpanded: Bool
     
@@ -26,13 +26,12 @@ struct DogWalkingMapView: View {
                 // 산책 중 메모
                 ForEach(dogWalkingMemorizeViewModel.dogWalkingMarkers) { marker in
                     Annotation("", coordinate: marker.coordinate.toCLLocationCoordinate2D()) {
-                        MarkerView(marker)
+                        DogWalkingMarkerView(marker: marker)
                             .highPriorityGesture(
                                 // iOS 18에서부터 Annotation에 .onTapGesture가 항상
                                 // 작동하지 않는 버그 때문에 .highPriorityGesture 사용
                                 TapGesture().onEnded({ _ in
-                                    dogWalkingMemorizeViewModel.selectedMarker = marker
-                                    showMarkerDetailView = true
+                                    selectedMarker = marker
                                 })
                             )
                     }
@@ -82,13 +81,19 @@ struct DogWalkingMapView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showMarkerDetailView) {
-                DogWalkingMarkingView()
-                    .presentationDetents([.medium, .large])
-                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
-                    .presentationBackground(ColorConstant.bgContent)
-            }
-            
+            .sheet(item: $selectedMarker, content: { marker in
+                DogWalkingMarkingView(marker: marker) { action in
+                    switch action {
+                    case .upsert(let marker):
+                        dogWalkingMemorizeViewModel.upsertMarker(marker)
+                    case .delete(let marker):
+                        dogWalkingMemorizeViewModel.deleteMarker(marker)
+                    }
+                }
+                .presentationDetents([.medium, .large])
+                .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+                .presentationBackground(ColorConstant.bgSecondary)
+            })
         case .notDetermined, .none:
             ColorConstant.bgContent
         case .restricted, .denied:
@@ -96,38 +101,6 @@ struct DogWalkingMapView: View {
         @unknown default:
             Text("unknown")
         }
-    }
-    
-    @ViewBuilder
-    private func MarkerView(_ marker: DogWalkingMarker) -> some View {
-        ZStack(alignment: .bottom) {
-            Path { path in
-                path.move(to: CGPoint(x: 16, y: 15))
-                path.addLine(to: CGPoint(x: 0, y: -15))
-                path.addLine(to: CGPoint(x: 32, y: -15))
-                path.closeSubpath()
-            }
-            .fill(ColorConstant.accent)
-            .frame(width: 32, height: 32)
-            .contentShape(Rectangle())
-            .padding(.bottom, 15)
-            
-            Circle()
-                .fill(ColorConstant.accent)
-                .frame(width: 32, height: 32)
-                .overlay {
-                    if let cachedImage = ImageCacheManager.shared.getImage(forKey: marker.id) {
-                        cachedImage
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 28, height: 28)
-                            .clipShape(.circle)
-                            .contentShape(.circle)
-                    }
-                }
-                .padding(.bottom, 45)
-        }
-        .contentShape(Rectangle())
     }
     
     @ViewBuilder

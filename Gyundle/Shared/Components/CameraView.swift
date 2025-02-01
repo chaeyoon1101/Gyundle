@@ -8,9 +8,16 @@
 import SwiftUI
 import UIKit
 
+enum CameraFinishedResult {
+    case cancelled
+    case finished(UIImage)
+    case failed
+}
+
 struct CameraView: UIViewControllerRepresentable {
-    @Binding var seletedImage: UIImage?
     @Environment(\.dismiss) private var dismiss
+    
+    let onFinished: (CameraFinishedResult) -> ()
     
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
         var parent: CameraView
@@ -20,14 +27,17 @@ struct CameraView: UIViewControllerRepresentable {
         }
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let uiImage = info[.originalImage] as? UIImage {
-                parent.seletedImage = uiImage
+            if let image = info[.originalImage] as? UIImage {
+                parent.onFinished(.finished(image))
+            } else {
+                parent.onFinished(.failed)
             }
             
             parent.dismiss()
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.onFinished(.cancelled)
             parent.dismiss()
         }
     }

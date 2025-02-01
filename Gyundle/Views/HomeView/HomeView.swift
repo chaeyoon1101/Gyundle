@@ -46,9 +46,6 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $dogWalkingMemoryViewModel.showMemorizeView) {
             DogWalkingMemorizeView(date: calendarViewModel.today)
         }
-        .navigationDestination(isPresented: $dogWalkingMemoryViewModel.showDetailView) {
-            DogWalkingDetailView()
-        }
         .environmentObject(dailyMemoryViewModel)
         .environmentObject(dogWalkingMemoryViewModel)
         .ignoresSafeArea()
@@ -76,20 +73,22 @@ struct HomeView: View {
             MemorizeViewButton(
                 color: Color.brown,
                 image: "dog.waiting",
-                text: "산책하기"
-            ) {
-                dogWalkingMemoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
-                dogWalkingMemoryViewModel.showMemorizeView.toggle()
-            }
+                text: "산책하기",
+                onTapped: {
+                    dogWalkingMemoryViewModel.showMemorizeView = true
+                }
+            )
+            
             
             MemorizeViewButton(
                 color: Color.indigo,
                 image: "dog.write.diary",
-                text: "일기쓰기"
-            ) {
-                dailyMemoryViewModel.selectedMemory = DailyMemory.defaultMemory()
-                dailyMemoryViewModel.isPresentedMemorizeView = true
-            }
+                text: "일기쓰기",
+                onTapped: {
+                    dailyMemoryViewModel.selectedMemory = DailyMemory.defaultMemory()
+                    dailyMemoryViewModel.isPresentedMemorizeView = true
+                }
+            )
         }
         .bold()
     }
@@ -99,7 +98,7 @@ struct HomeView: View {
         color: Color,
         image: String,
         text: String,
-        action: @escaping () -> ()
+        onTapped: @escaping () -> ()
     ) -> some View {
         VStack(spacing: 12) {
             Image(image)
@@ -117,7 +116,7 @@ struct HomeView: View {
                 .fill(color)
         }
         .onTapGesture {
-            action()
+            onTapped()
             showingMemorizeView.toggle()
         }
     }

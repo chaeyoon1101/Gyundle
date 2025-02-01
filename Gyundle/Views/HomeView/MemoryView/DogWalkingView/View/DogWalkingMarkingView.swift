@@ -8,19 +8,26 @@
 import SwiftUI
 import CoreLocation
 
+enum MarkingAction {
+    case upsert(marker: DogWalkingMarker)
+    case delete(marker: DogWalkingMarker)
+}
+
 struct DogWalkingMarkingView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var dogWalkingMemorizeViewModel: DogWalkingMemorizeViewModel
     
-    @State private var isEditing: Bool
+    @FocusState private var isFocused: Bool
+    @State private var isEditing: Bool = true
+    
+    
     @State private var image: UIImage?
+    @State private var isImageUploading: Bool = false
     
     @State private var showCameraView: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     
-    init(isEditing: Bool = false) {
-        self.isEditing = isEditing
-    }
+    @State var marker: DogWalkingMarker
+    let action: (MarkingAction) -> ()
     
     var body: some View {
         NavigationStack {
@@ -62,6 +69,7 @@ struct DogWalkingMarkingView: View {
                                 
                                 Button {
                                     isEditing = true
+                                    isFocused = true
                                 } label: {
                                     Label("편집", systemImage: "pencil")
                                 }
@@ -79,7 +87,7 @@ struct DogWalkingMarkingView: View {
                                     }
                                     
                                     Button("삭제하기", role: .destructive) {
-                                        dogWalkingMemorizeViewModel.removeMarker()
+                                        action(.delete(marker: marker))
                                         dismiss()
                                     }
                                 },
@@ -90,12 +98,7 @@ struct DogWalkingMarkingView: View {
                         }
                         
                         Button("저장") {
-                            if isUpdating() {
-                                dogWalkingMemorizeViewModel.updateMarker(image: image)
-                            } else {
-                                dogWalkingMemorizeViewModel.addMarker(image: image)
-                            }
-                            
+                            action(.upsert(marker: marker))
                             dismiss()
                         }
                         .foregroundStyle(ColorConstant.accent)
@@ -104,46 +107,59 @@ struct DogWalkingMarkingView: View {
                 }
             })
             .fullScreenCover(isPresented: $showCameraView) {
-                CameraView(seletedImage: $image)
+                CameraView(onFinished: { result in
+                    switch result {
+                    case .finished(let image):
+                        self.image = image
+                        Task {
+                            await uploadImage(image)
+                        }
+                    case .failed:
+                        print("사진을 찍는 과정에서 무언가가 잘못 됨")
+                    case .cancelled:
+                        print("Cancelled")
+                    }
+                })
             }
         }
+        .progressView(isShowing: $isImageUploading)
         .task {
-            if let imageURL = dogWalkingMemorizeViewModel.selectedMarker?.imageURL {
+            if let imageURL = marker.imageURL {
                 await loadImage(from: imageURL)
             }
+        }
+        .onAppear {
+            isEditing = marker.memo.isEmpty
         }
     }
     
     @ViewBuilder
     private func MarkerEditView() -> some View {
-        if let image {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 150)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 6)
-                .clipShape(.rect(cornerRadius: 12))
-                .contentShape(.rect(cornerRadius: 12))
-        }
+        ImageView()
         
-        TextField(
-            "ex) OO이가 냄새를 많이 맡은 곳",
-            text: Binding(get: {
-                dogWalkingMemorizeViewModel.selectedMarker?.memo ?? ""
-            }, set: { newValue in
-                dogWalkingMemorizeViewModel.selectedMarker?.memo = newValue
-            }),
-            axis: .vertical
-        )
-        .lineLimit(1...4)
-        .align(.top)
-        .padding()
+        TextField("ex) OO이가 냄새를 많이 맡은 곳", text: $marker.memo, axis: .vertical)
+            .focused($isFocused)
+            .lineLimit(1...4)
+            .align(.top)
+            .padding()
+            .frame(maxHeight: .infinity)
     }
     
     @ViewBuilder
     private func MarkerView() -> some View {
         ScrollView(.vertical) {
+            ImageView()
+            
+            Text(marker.memo)
+                .multilineTextAlignment(.leading)
+                .align(.topLeading)
+                .padding()
+        }
+    }
+    
+    @ViewBuilder
+    private func ImageView() -> some View {
+        if let imageURL = marker.imageURL {
             if let image {
                 Image(uiImage: image)
                     .resizable()
@@ -153,25 +169,42 @@ struct DogWalkingMarkingView: View {
                     .padding(.horizontal, 6)
                     .clipShape(.rect(cornerRadius: 12))
                     .contentShape(.rect(cornerRadius: 12))
+            } else {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(ColorConstant.bgContent)
+                    .frame(height: 150)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 6)
+                    .overlay {
+                        LoadingView()
+                    }
+                    .task {
+                        await loadImage(from: imageURL)
+                    }
             }
-            
-            Text(dogWalkingMemorizeViewModel.selectedMarker?.memo ?? "")
-                .multilineTextAlignment(.leading)
-                .align(.topLeading)
-                .padding()
         }
     }
     
-    private func isUpdating() -> Bool {
-        let selectedMarkerID = dogWalkingMemorizeViewModel.selectedMarker?.id
-        
-        return dogWalkingMemorizeViewModel.dogWalkingMarkers.contains(where: { $0.id == selectedMarkerID })
+    @MainActor
+    private func uploadImage(_ image: UIImage) async {
+        if let imageData = image.jpegData(compressionQuality: 0.7) {
+            defer { isImageUploading = false }
+            isImageUploading = true
+            
+            let downloadURL = try? await FirebaseManager.shared.uploadPhoto(
+                with: imageData,
+                to: PhotoStorage.dogWalkingMemory.folderName
+            )
+
+            if let downloadURL {
+                marker.imageURL = downloadURL
+                ImageCacheManager.shared.setImage(Image(uiImage: image), forKey: downloadURL)
+            }
+        }
     }
     
     private func loadImage(from url: String) async {
-        guard let selectedMarker = dogWalkingMemorizeViewModel.selectedMarker else { return }
-    
-        if let cachedImage = ImageCacheManager.shared.getImage(forKey: selectedMarker.id) {
+        if let cachedImage = ImageCacheManager.shared.getImage(forKey: url) {
             await MainActor.run {
                 self.image = cachedImage.asUIImage()
             }
@@ -184,7 +217,7 @@ struct DogWalkingMarkingView: View {
                 await MainActor.run {
                     if let uiImage = UIImage(data: data) {
                         self.image = uiImage
-                        ImageCacheManager.shared.setImage(Image(uiImage: uiImage), forKey: selectedMarker.id)
+                        ImageCacheManager.shared.setImage(Image(uiImage: uiImage), forKey: url.absoluteString)
                     }
                 }
             } catch {

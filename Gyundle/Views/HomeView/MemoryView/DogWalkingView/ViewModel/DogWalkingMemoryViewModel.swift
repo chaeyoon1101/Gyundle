@@ -6,64 +6,43 @@
 //
 
 import Foundation
+import SwiftUI
 
 class DogWalkingMemoryViewModel: ObservableObject {
     @Published var dogWalkingMemories: [MemoryKey: [DogWalkingMemory]] = [:]
     
-    @Published var selectedMemory: DogWalkingMemory?
     @Published var isUploading: Bool = false
     
     // View Present Properties
     @Published var showMemorizeView: Bool = false
     @Published var showDetailView: Bool = false
     
-    func uploadMemory() async {
-        guard let selectedMemory else {
-            print("Selected Memory가 존재하지 않음")
-            return
-        }
+    
+    // MARK: Memory
+    
+    func uploadMemory(_ memory: DogWalkingMemory) async {
         await changeUploadState(to: true)
 
         do {
-            try await FirebaseManager.shared.uploadMemory(selectedMemory)
+            try await FirebaseManager.shared.uploadMemory(memory)
             
-            print("Dog Walking Memory Upload 성공:", selectedMemory.uid)
+            print("Dog Walking Memory Upload 성공:", memory.uid)
             
-            let key = MemoryKey.convertToKey(from: selectedMemory.date)
+            let key = MemoryKey.convertToKey(from: memory.date)
             await MainActor.run {
-                dogWalkingMemories[key, default: []].append(selectedMemory)
+                dogWalkingMemories[key, default: []].append(memory)
             }
         } catch {
             print("Dog Walking Memory Upload 실패:", error.localizedDescription)
         }
         
         await changeUploadState(to: false)
-        await resetSelectedMemory()
     }
     
-    func updateMemory() async {
-        guard let selectedMemory else {
-            print("Selected Memory가 존재하지 않음")
-            return
-        }
-        
-        
-        let key = MemoryKey.convertToKey(from: selectedMemory.date)
-        guard let targetMemory = dogWalkingMemories[key]?.first(where: { $0.uid == selectedMemory.uid }) else {
-            print("업데이트할 Memory가 없음")
-            return
-        }
-        
-        guard targetMemory.title != selectedMemory.title else { return }
-        
+    func updateMemory(_ memory: DogWalkingMemory) async {
         do {
-            await MainActor.run {
-                let updatedMemories = dogWalkingMemories[key]?.map( { $0.uid != selectedMemory.uid ? $0 : selectedMemory } )
-                
-                self.dogWalkingMemories[key] = updatedMemories
-            }
-            
-            try await FirebaseManager.shared.updateMemory(selectedMemory)
+            try await FirebaseManager.shared.updateMemory(memory)
+            print("Dog Walking Memory Update 성공:", memory.uid)
         } catch {
             print("Dog Walking Memory Update 실패:", error.localizedDescription)
         }
@@ -87,18 +66,21 @@ class DogWalkingMemoryViewModel: ObservableObject {
         }
     }
     
-    func getMemories(from date: Date) -> [DogWalkingMemory]? {
+    func getMemories(from date: Date) -> Binding<[DogWalkingMemory]> {
         let key = MemoryKey.convertToKey(from: date)
         
-        guard let memories = dogWalkingMemories[key] else { return nil }
-        
-        let filteredMemories = memories.filter { $0.day == date.toDay() }
-        return filteredMemories.isEmpty ? nil : filteredMemories
-    }
-    
-    @MainActor
-    private func resetSelectedMemory() {
-        selectedMemory = nil
+        return Binding(
+            get: {
+                self.dogWalkingMemories[key]?
+                    .filter { $0.day == date.toDay() } ?? []
+            }, set: { newValue in
+                let memories = self.dogWalkingMemories[key] ?? []
+                
+                let updatedValue = memories.filter { $0.day != date.toDay() } + newValue
+                
+                self.dogWalkingMemories[key] = updatedValue
+            }
+        )
     }
     
     @MainActor

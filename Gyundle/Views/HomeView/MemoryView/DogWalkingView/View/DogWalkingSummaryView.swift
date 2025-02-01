@@ -15,63 +15,62 @@ struct DogWalkingSummaryView: View {
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
 
     @FocusState var isFocused: Bool
+    @Binding var memory: DogWalkingMemory
     
     var body: some View {
         ZStack {
             Self.background(color: ColorConstant.bgPrimary)
             
-            if let memory = dogWalkingMemoryViewModel.selectedMemory {
-                VStack(alignment: .leading) {
-                    TitleTextField()
-                    
-                    Text(memory.time)
-                        .font(.system(size: 64, weight: .bold))
-                        .padding(.bottom, 15)
-                    
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(memory.distance + "km")
-                                .font(.title3)
-                                .bold()
-                            
-                            Text("산책 거리")
-                                .font(.subheadline)
-                                .foregroundStyle(ColorConstant.fgSecondary)
-                        }
-                        .align(.leading)
-                        
-                        VStack(alignment: .leading) {
-                            Text(memory.calories + "kcal")
-                                .font(.title3)
-                                .bold()
-                            
-                            Text("칼로리")
-                                .font(.subheadline)
-                                .foregroundStyle(ColorConstant.fgSecondary)
-                        }
-                        .align(.leading)
-                        
-                        VStack(alignment: .leading) {
-                            Text(memory.speed + "km/h")
-                                .font(.title3)
-                                .bold()
-                            
-                            Text("산책 속도")
-                                .font(.subheadline)
-                                .foregroundStyle(ColorConstant.fgSecondary)
-                        }
-                        .align(.leading)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.trailing, 30)
+            VStack(alignment: .leading) {
+                TitleTextField()
+                
+                Text(memory.time)
+                    .font(.system(size: 64, weight: .bold))
                     .padding(.bottom, 15)
+                
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(memory.distance + "km")
+                            .font(.title3)
+                            .bold()
+                        
+                        Text("산책 거리")
+                            .font(.subheadline)
+                            .foregroundStyle(ColorConstant.fgSecondary)
+                    }
+                    .align(.leading)
                     
-                    MapView()
-                        .clipShape(.rect(cornerRadius: 15))
-                        .frame(maxHeight: .infinity)
+                    VStack(alignment: .leading) {
+                        Text(memory.calories + "kcal")
+                            .font(.title3)
+                            .bold()
+                        
+                        Text("칼로리")
+                            .font(.subheadline)
+                            .foregroundStyle(ColorConstant.fgSecondary)
+                    }
+                    .align(.leading)
+                    
+                    VStack(alignment: .leading) {
+                        Text(memory.speed + "km/h")
+                            .font(.title3)
+                            .bold()
+                        
+                        Text("산책 속도")
+                            .font(.subheadline)
+                            .foregroundStyle(ColorConstant.fgSecondary)
+                    }
+                    .align(.leading)
                 }
-                .padding()
+                .frame(maxWidth: .infinity)
+                .padding(.trailing, 30)
+                .padding(.bottom, 15)
+                
+                MapView()
+                    .clipShape(.rect(cornerRadius: 15))
+                    .frame(maxHeight: .infinity)
             }
+            .padding()
         }
         .onTapGesture {
             isFocused = false
@@ -85,7 +84,7 @@ struct DogWalkingSummaryView: View {
                 if !dogWalkingMemoryViewModel.isUploading {
                     Button("완료") {
                         Task {
-                            await dogWalkingMemoryViewModel.uploadMemory()
+                            await dogWalkingMemoryViewModel.uploadMemory(memory)
                             dogWalkingMemoryViewModel.showMemorizeView = false
                         }
                     }
@@ -107,32 +106,26 @@ struct DogWalkingSummaryView: View {
                 .foregroundStyle(ColorConstant.fgSecondary)
             
             HStack {
-                TextField(
-                    "",
-                    text: Binding(get: {
-                        dogWalkingMemoryViewModel.selectedMemory?.title ?? ""
-                    }, set: { newValue in
-                        dogWalkingMemoryViewModel.selectedMemory?.title = newValue
-                    }),
-                    axis: .vertical
-                )
-                .font(.system(size: 24))
-                .lineLimit(2)
-                .focused($isFocused)
-                .onChange(of: isFocused, initial: true) { _, newValue in
-                    if !newValue, dogWalkingMemoryViewModel.selectedMemory?.title == "" {
-                        dogWalkingMemoryViewModel.selectedMemory?.title = defaultTitle
+                TextField("", text: $memory.title, axis: .vertical)
+                    .font(.system(size: 24))
+                    .lineLimit(2)
+                    .focused($isFocused)
+                    .onChange(of: isFocused, initial: true) { _, newValue in
+                        // 제목이 빈칸일 시 기본 제목으로 설정
+                        guard !newValue else { return }
+                        
+                        if memory.title.isEmpty {
+                            memory.title = defaultTitle
+                        }
                     }
-                }
-                // 키보드 done 버튼 누르면 TextField focus 해제
-                .submitLabel(.done)
-                .onChange(of: dogWalkingMemoryViewModel.selectedMemory?.title) { _, newValue in
-                    guard isFocused else { return }
-                    guard let title = newValue, title.contains("\n") else { return }
-                    
-                    isFocused = false
-                    dogWalkingMemoryViewModel.selectedMemory?.title = title.replacing("\n", with: "")
-                }
+                    // 키보드 done 버튼 누르면 TextField focus 해제
+                    .submitLabel(.done)
+                    .onChange(of: memory.title) { _, newValue in
+                        guard isFocused, newValue.contains("\n") else { return }
+                        
+                        isFocused = false
+                        memory.title = newValue.replacing("\n", with: "")
+                    }
                 
                 if isFocused {
                     Image(systemName: "xmark.circle.fill")
@@ -140,7 +133,7 @@ struct DogWalkingSummaryView: View {
                         .foregroundStyle(ColorConstant.fgSecondary)
                         .contentShape(.rect)
                         .onTapGesture {
-                            dogWalkingMemoryViewModel.selectedMemory?.title = ""
+                            memory.title = ""
                         }
                 } else {
                     Image(systemName: "pencil")
@@ -165,62 +158,30 @@ struct DogWalkingSummaryView: View {
         Map(initialPosition: getCameraPosition()) {
             
             // 산책 이동 위치
-            let coordinates = dogWalkingMemoryViewModel.selectedMemory?.coordinates.compactMap({ $0.toCLLocationCoordinate2D() })
-            if let coordinates, !coordinates.isEmpty {
+            let coordinates = memory.coordinates.map({ $0.toCLLocationCoordinate2D() })
+            if !coordinates.isEmpty {
                 MapPolyline(coordinates: coordinates, contourStyle: .geodesic)
                     .stroke(ColorConstant.fgPrimary, lineWidth: 4)
             }
             
             // 산책 메모 마커
-            if let markers = dogWalkingMemoryViewModel.selectedMemory?.markers {
-                ForEach(markers) { marker in
+            if !memory.markers.isEmpty {
+                ForEach(memory.markers) { marker in
                     Annotation("", coordinate: marker.coordinate.toCLLocationCoordinate2D()) {
-                        MarkerView(marker)
+                        DogWalkingMarkerView(marker: marker)
                     }
                 }
             }
             
             // 산책 시작위치와 종료 위치
-            Annotation("", coordinate: coordinates?.first ?? .init()) {
+            Annotation("", coordinate: coordinates.first ?? .init()) {
                 AnnotationView(.start)
             }
             
-            Annotation("", coordinate: coordinates?.last ?? .init()) {
+            Annotation("", coordinate: coordinates.last ?? .init()) {
                 AnnotationView(.end)
             }
         }
-    }
-
-    @ViewBuilder
-    private func MarkerView(_ marker: DogWalkingMarker) -> some View {
-        ZStack(alignment: .bottom) {
-            Path { path in
-                path.move(to: CGPoint(x: 16, y: 15))
-                path.addLine(to: CGPoint(x: 0, y: -15))
-                path.addLine(to: CGPoint(x: 32, y: -15))
-                path.closeSubpath()
-            }
-            .fill(ColorConstant.accent)
-            .frame(width: 32, height: 32)
-            .contentShape(Rectangle())
-            .padding(.bottom, 20)
-            
-            Circle()
-                .fill(ColorConstant.accent)
-                .frame(width: 32, height: 32)
-                .overlay {
-                    if let cachedImage = ImageCacheManager.shared.getImage(forKey: marker.id) {
-                        cachedImage
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 28, height: 28)
-                            .clipShape(.circle)
-                            .contentShape(.circle)
-                    }
-                }
-                .padding(.bottom, 50)
-        }
-        .contentShape(Rectangle())
     }
     
     @ViewBuilder
@@ -252,12 +213,8 @@ struct DogWalkingSummaryView: View {
     }
     
     private func getCameraPosition() -> MapCameraPosition {
-        guard let coordinates = dogWalkingMemoryViewModel.selectedMemory?.coordinates else {
-            return .automatic
-        }
-        
-        let latitudes = coordinates.compactMap { Double($0.latitude) }
-        let longitudes = coordinates.compactMap { Double($0.longitude) }
+        let latitudes = memory.coordinates.compactMap { Double($0.latitude) }
+        let longitudes = memory.coordinates.compactMap { Double($0.longitude) }
         
         let minLatitude = latitudes.min() ?? 0
         let maxLatitude = latitudes.max() ?? 0
@@ -307,10 +264,6 @@ struct DogWalkingSummaryView: View {
 
 
 #Preview {
-    let dogWalkingMemoryViewModel = DogWalkingMemoryViewModel()
-    
-    let _ = dogWalkingMemoryViewModel.selectedMemory = DogWalkingMemory.defaultMemory()
-
-    DogWalkingSummaryView()
-        .environmentObject(dogWalkingMemoryViewModel)
+    DogWalkingSummaryView(memory: .constant(.defaultMemory()))
+        .environmentObject(DogWalkingMemoryViewModel())
 }

@@ -21,6 +21,14 @@ struct DailyMemory: Memorable {
             photosURL: .init()
         )
     }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.uid == rhs.uid &&
+        lhs.day == rhs.day &&
+        lhs.date == rhs.date &&
+        lhs.text == rhs.text &&
+        lhs.photosURL == rhs.photosURL
+    }
 }
 
 struct DogWalkingMemory: Memorable {
@@ -48,16 +56,38 @@ struct DogWalkingMemory: Memorable {
             markers: []
         )
     }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.uid == rhs.uid &&
+        lhs.day == rhs.day &&
+        lhs.date == rhs.date &&
+        lhs.title == rhs.title &&
+        lhs.coordinates == rhs.coordinates &&
+        lhs.markers == rhs.markers
+    }
 }
 
-struct DogWalkingMarker: Identifiable, Codable {
+struct DogWalkingMarker: Identifiable, Codable, Equatable {
     var id: String = UUID().uuidString
     var coordinate: Coordinate
     var memo: String
     var imageURL: String?
+    
+    init(coordinate: Coordinate = .init(), memo: String = "", imageURL: String? = nil) {
+        self.coordinate = coordinate
+        self.memo = memo
+        self.imageURL = imageURL
+    }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.coordinate == rhs.coordinate &&
+        lhs.memo == rhs.memo &&
+        lhs.imageURL == rhs.imageURL
+    }
 }
 
-struct Coordinate: Codable {
+struct Coordinate: Codable, Equatable {
     var latitude: String
     var longitude: String
     

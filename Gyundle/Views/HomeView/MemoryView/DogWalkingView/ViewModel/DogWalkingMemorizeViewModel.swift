@@ -16,8 +16,6 @@ final class DogWalkingMemorizeViewModel: ObservableObject {
     
     // Marker
     @Published var dogWalkingMarkers: [DogWalkingMarker] = []
-    @Published var selectedMarker: DogWalkingMarker?
-    
     
     // MARK: Timer
     let timerPublisher = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -31,63 +29,28 @@ final class DogWalkingMemorizeViewModel: ObservableObject {
         dogWalkingCalories = calculateCalories()
     }
     
-    func addMarker(image: UIImage?) {
-        guard let selectedMarker else { return }
+    func upsertMarker(_ marker: DogWalkingMarker) {
+        let isExistMarker = dogWalkingMarkers.contains(where: { $0.id == marker.id })
         
-        dogWalkingMarkers.append(selectedMarker)
-        
-        if let image {
-            uploadImageAsync(image: image, marker: selectedMarker)
+        if isExistMarker {
+            updateMarker(marker)
+        } else {
+            insertMarker(marker)
         }
-        
-        self.selectedMarker = nil
+    }
+    
+    func deleteMarker(_ marker: DogWalkingMarker) {
+        withAnimation(.snappy) {
+            dogWalkingMarkers.removeAll(where: { $0.id == marker.id })
+        }
+    }
+     
+    private func insertMarker(_ marker: DogWalkingMarker) {
+        dogWalkingMarkers.append(marker)
     }
 
-    func updateMarker(image: UIImage?) {
-        guard let selectedMarker else { return }
-        
-        dogWalkingMarkers = dogWalkingMarkers.map {
-            $0.id == selectedMarker.id ? selectedMarker : $0
-        }
-        
-        if let image {
-            uploadImageAsync(image: image, marker: selectedMarker)
-        }
-        
-        self.selectedMarker = nil
-    }
-    
-    func removeMarker() {
-        guard let selectedMarker else {
-            print("선택된 Marker가 없음")
-            return
-        }
-        
-        withAnimation(.snappy) {
-            dogWalkingMarkers.removeAll(where: { $0.id == selectedMarker.id })
-        }
-        
-        self.selectedMarker = nil
-    }
-    
-    // 이미지가 있다면 Cache에 저장을 먼저해서 이미지를 다시 받아오지 않게 하기
-    // 이후에 비동기로 Firebase에 업로드 후 photoURL 데이터를 새로 저장
-    private func uploadImageAsync(image: UIImage, marker: DogWalkingMarker) {
-        Task {
-            DispatchQueue.main.async {
-                ImageCacheManager.shared.setImage(Image(uiImage: image), forKey: marker.id)
-            }
-            
-            if let imageData = image.jpegData(compressionQuality: 0.5) {
-                let downloadURL = try await FirebaseManager.shared.uploadPhoto(with: imageData, to: PhotoStorage.dogWalkingMemory.folderName)
-                
-                await MainActor.run {
-                    if let index = dogWalkingMarkers.firstIndex(where: { $0.id == marker.id }) {
-                        dogWalkingMarkers[index].imageURL = downloadURL
-                    }
-                }
-            }
-        }
+    private func updateMarker(_ marker: DogWalkingMarker) {
+        dogWalkingMarkers.update(keyPath: \.id, matching: marker.id, with: marker)
     }
     
     private func calculateCalories() -> String {

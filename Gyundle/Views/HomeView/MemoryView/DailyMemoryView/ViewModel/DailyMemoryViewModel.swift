@@ -76,8 +76,7 @@ class DailyMemoryViewModel: ObservableObject {
                 isPresentedMemorizeView = false
                 
                 let key = MemoryKey.convertToKey(from: memory.date)
-                let updatedMemory = dailyMemories[key]?.map { $0.uid != memory.uid ? $0 : memory }
-                dailyMemories[key] = updatedMemory
+                dailyMemories[key]?.update(keyPath: \.uid, matching: memory.uid, with: memory)
             }
             print("Memory 업데이트 성공")
         } catch {

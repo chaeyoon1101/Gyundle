@@ -20,8 +20,8 @@ final class ImageCacheManager {
         return cache
     }()
     
-    func getImage(forKey key: String) -> Image? {
-        guard let uiImage = cache.object(forKey: key as NSString) else {
+    func getImage(forKey key: String?) -> Image? {
+        guard let key, let uiImage = cache.object(forKey: key as NSString) else {
             return nil
         }
         

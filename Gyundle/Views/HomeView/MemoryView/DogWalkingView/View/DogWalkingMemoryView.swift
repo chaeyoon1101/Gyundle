@@ -3,22 +3,23 @@ import MapKit
 
 struct DogWalkingMemoryView: View {
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
-    
     let date: Date
     
     var body: some View {
-        if let memories = dogWalkingMemoryViewModel.getMemories(from: date) {
+        let memories = dogWalkingMemoryViewModel.getMemories(from: date)
+        
+        if memories.wrappedValue != [] {
             HeaderView()
                 .padding(.bottom, -20)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
+                LazyHStack {
                     ForEach(memories, id: \.uid) { memory in
-                        CardView(memory: memory)
-                            .onTapGesture {
-                                dogWalkingMemoryViewModel.selectedMemory = memory
-                                dogWalkingMemoryViewModel.showDetailView = true
-                            }
+                        NavigationLink {
+                            DogWalkingDetailView(memory: memory)
+                        } label: {
+                            CardView(memory: memory.wrappedValue)
+                        }
                     }
                 }
                 .scrollTargetLayout()
