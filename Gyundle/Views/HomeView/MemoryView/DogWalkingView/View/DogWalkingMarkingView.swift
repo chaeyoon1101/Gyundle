@@ -123,11 +123,6 @@ struct DogWalkingMarkingView: View {
             }
         }
         .progressView(isShowing: $isImageUploading)
-        .task {
-            if let imageURL = marker.imageURL {
-                await loadImage(from: imageURL)
-            }
-        }
         .onAppear {
             isEditing = marker.memo.isEmpty
         }

@@ -13,7 +13,7 @@ struct DogWalkingMemoryView: View {
                 .padding(.bottom, -20)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack {
+                HStack {
                     ForEach(memories, id: \.uid) { memory in
                         NavigationLink {
                             DogWalkingDetailView(memory: memory)
@@ -96,7 +96,7 @@ struct DogWalkingMemoryView: View {
     
     @ViewBuilder
     private func MapView(memory: DogWalkingMemory) -> some View {
-        let cameraPosition = getCameraPosition(coordinates: memory.coordinates)
+        let cameraPosition = MapCameraPosition.getCameraPosition(for: memory.coordinates)
         
         Map(initialPosition: cameraPosition, interactionModes: []) {
             if !memory.coordinates.isEmpty {
@@ -121,34 +121,6 @@ struct DogWalkingMemoryView: View {
             Spacer()
         }
         .padding(.leading)
-    }
-    
-    private func getCameraPosition(coordinates: [Coordinate]) -> MapCameraPosition {
-        let latitudes = coordinates.compactMap { Double($0.latitude) }
-        let longitudes = coordinates.compactMap { Double($0.longitude) }
-        
-        let minLatitude = latitudes.min() ?? 0
-        let maxLatitude = latitudes.max() ?? 0
-        let minLongitude = longitudes.min() ?? 0
-        let maxLongitude = longitudes.max() ?? 0
-        
-        
-        // 카메라 중심점
-        let center = CLLocationCoordinate2D(
-            latitude: (minLatitude + maxLatitude) / 2,
-            longitude: (minLongitude + maxLongitude) / 2
-        )
-        
-        
-        // 여유 간격
-        let span = MKCoordinateSpan(
-            latitudeDelta: (maxLatitude - minLatitude) * 1.75,
-            longitudeDelta: (maxLongitude - minLongitude) * 1.75
-        )
-        
-        return MapCameraPosition.region(
-            .init(center: center, span: span)
-        )
     }
 }
 

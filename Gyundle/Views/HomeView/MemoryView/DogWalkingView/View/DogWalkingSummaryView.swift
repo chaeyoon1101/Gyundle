@@ -154,9 +154,9 @@ struct DogWalkingSummaryView: View {
     
     @ViewBuilder
     private func MapView() -> some View {
-        // TODO: 시작 위치와 끝난 위치 보여주기 coordinates.first, last
-        Map(initialPosition: getCameraPosition()) {
-            
+        let position = MapCameraPosition.getCameraPosition(for: memory.coordinates)
+        
+        Map(initialPosition: position) {
             // 산책 이동 위치
             let coordinates = memory.coordinates.map({ $0.toCLLocationCoordinate2D() })
             if !coordinates.isEmpty {
@@ -175,69 +175,13 @@ struct DogWalkingSummaryView: View {
             
             // 산책 시작위치와 종료 위치
             Annotation("", coordinate: coordinates.first ?? .init()) {
-                AnnotationView(.start)
+                DogWalkingAnnotation(annotationType: .start)
             }
             
             Annotation("", coordinate: coordinates.last ?? .init()) {
-                AnnotationView(.end)
+                DogWalkingAnnotation(annotationType: .end)
             }
         }
-    }
-    
-    @ViewBuilder
-    private func AnnotationView(_ annotation: AnnotationType) -> some View {
-        ZStack(alignment: .bottom) {
-            Path { path in
-                path.move(to: CGPoint(x: 16, y: 15))
-                path.addLine(to: CGPoint(x: 0, y: -15))
-                path.addLine(to: CGPoint(x: 32, y: -15))
-                path.closeSubpath()
-            }
-            .fill(annotation.color)
-            .frame(width: 32, height: 32)
-            .contentShape(Rectangle())
-            .padding(.bottom, 20)
-            
-            Circle()
-                .fill(annotation.color)
-                .frame(width: 32, height: 32)
-                .overlay {
-                    Text(annotation.stringValue)
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
-                }
-                .padding(.bottom, 50)
-        }
-        .contentShape(Rectangle())
-    }
-    
-    private func getCameraPosition() -> MapCameraPosition {
-        let latitudes = memory.coordinates.compactMap { Double($0.latitude) }
-        let longitudes = memory.coordinates.compactMap { Double($0.longitude) }
-        
-        let minLatitude = latitudes.min() ?? 0
-        let maxLatitude = latitudes.max() ?? 0
-        let minLongitude = longitudes.min() ?? 0
-        let maxLongitude = longitudes.max() ?? 0
-        
-        
-        // 카메라 중심점
-        let center = CLLocationCoordinate2D(
-            latitude: (minLatitude + maxLatitude) / 2,
-            longitude: (minLongitude + maxLongitude) / 2
-        )
-        
-        
-        // 여유 간격
-        let span = MKCoordinateSpan(
-            latitudeDelta: (maxLatitude - minLatitude) * 1.75,
-            longitudeDelta: (maxLongitude - minLongitude) * 1.75
-        )
-        
-        return MapCameraPosition.region(
-            .init(center: center, span: span)
-        )
     }
     
     private var defaultTitle: String {
