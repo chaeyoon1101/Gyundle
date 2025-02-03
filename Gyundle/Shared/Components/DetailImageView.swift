@@ -14,27 +14,20 @@ struct DetailImageView: View {
         ZStack {
             Self.background(color: .black).opacity(detailImageViewModel.scale)
              
-            TabView(selection: $detailImageViewModel.selectedPhoto) {
+            TabView(selection: $detailImageViewModel.selectedImage) {
                 
-                ForEach(detailImageViewModel.photoSelection, id: \.self) { photoURL in
-                    
-                    CachedAsyncImage(url: URL(string: photoURL)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                        case .empty:
-                            LoadingView()
-                        case .failure(_ ):
-                            Image(systemName: "xmark.circle")
-                        @unknown default:
-                            LoadingView()
-                        }
+                ForEach(detailImageViewModel.selection, id: \.self) { item in
+                    if let image = item.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .tag(item)
+                            .offset(detailImageViewModel.position)
+                            .scaleEffect(detailImageViewModel.scale)
+                    } else {
+                        LoadingView()
+                            .tag(item)
                     }
-                    .tag(photoURL)
-                    .offset(detailImageViewModel.position)
-                    .scaleEffect(detailImageViewModel.scale)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
@@ -58,7 +51,7 @@ struct DetailImageView: View {
                     let translationHeight = abs(value.translation.height)
                     
                     if translationHeight > 200 {
-                        detailImageViewModel.popView()
+                        detailImageViewModel.dismissView()
                     } else {
                         detailImageViewModel.resetTransform()
                     }

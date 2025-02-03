@@ -16,13 +16,16 @@ enum MarkingAction {
 struct DogWalkingMarkingView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // TextField Properties
     @FocusState private var isFocused: Bool
     @State private var isEditing: Bool = true
     
-    
+    // Camera & Images Properties
+    @StateObject private var detailImageViewModel = DetailImageViewModel()
     @State private var image: UIImage?
     @State private var isImageUploading: Bool = false
     
+    // Present Properties
     @State private var showCameraView: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     
@@ -122,6 +125,11 @@ struct DogWalkingMarkingView: View {
                 })
             }
         }
+        .appWideOverlay(isShowing: $detailImageViewModel.isShowing) {
+            DetailImageView()
+                .environmentObject(detailImageViewModel)
+        }
+        .interactiveDismissDisabled(detailImageViewModel.isShowing)
         .progressView(isShowing: $isImageUploading)
         .onAppear {
             isEditing = marker.memo.isEmpty
@@ -155,7 +163,7 @@ struct DogWalkingMarkingView: View {
     @ViewBuilder
     private func ImageView() -> some View {
         if let imageURL = marker.imageURL {
-            if let image {
+            if let image, !detailImageViewModel.isShowing {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -164,15 +172,20 @@ struct DogWalkingMarkingView: View {
                     .padding(.horizontal, 6)
                     .clipShape(.rect(cornerRadius: 12))
                     .contentShape(.rect(cornerRadius: 12))
+                    .onFirstAppear {
+                        let image = Image(uiImage: image)
+                        let selection = [DetailImageViewModel.IdentifiableImage(id: imageURL, image: image)]
+                        detailImageViewModel.selection = selection
+                    }
+                    .onTapGesture {
+                        detailImageViewModel.presentView(selectedID: imageURL)
+                    }
             } else {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(ColorConstant.bgContent)
                     .frame(height: 150)
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 6)
-                    .overlay {
-                        LoadingView()
-                    }
                     .task {
                         await loadImage(from: imageURL)
                     }

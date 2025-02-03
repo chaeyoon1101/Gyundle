@@ -45,9 +45,6 @@ struct DailyMemoryPhoto: View {
                     height: screenWidth / photoCount - 4
                 )
                 .frame(maxHeight: screenWidth / 2)
-                .overlay {
-                    LoadingView()
-                }
                 .onAppear {
                     Task {
                         self.image = await photoAttachment.loadImage()

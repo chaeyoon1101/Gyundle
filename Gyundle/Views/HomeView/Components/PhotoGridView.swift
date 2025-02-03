@@ -20,15 +20,14 @@ struct PhotoGridView: View {
                 CachedAsyncImage(url: URL(string: photoURL)) { phase in
                     PhaseView(phase, url: photoURL)
                 }
-                .onTapGesture {
-                    detailImageViewModel.pushView(
-                        with: photoURL,
-                        selection: photosURL
-                    )
-                }
             }
         }
-        .appWideOverlay(isShowing: $detailImageViewModel.isShowing, animation: .snappy) {
+        .onFirstAppear {
+            // 처음 나타날 때 모든 사진을 id만 지정해놓고 이후에 image를 Load해서 추가해주는 방식
+            let selection = photosURL.map { DetailImageViewModel.IdentifiableImage(id: $0) }
+            detailImageViewModel.selection = selection
+        }
+        .appWideOverlay(isShowing: $detailImageViewModel.isShowing) {
             DetailImageView()
                 .environmentObject(detailImageViewModel)
         }
@@ -38,7 +37,7 @@ struct PhotoGridView: View {
     private func PhaseView(_ phase: AsyncImagePhase, url photoURL: String) -> some View {
         switch phase {
         case .success(let image):
-            if detailImageViewModel.selectedPhoto != photoURL {
+            if detailImageViewModel.selectedImage?.id != photoURL {
                 GeometryReader { let size = $0.size
                     image
                         .resizable()
@@ -46,28 +45,29 @@ struct PhotoGridView: View {
                         .frame(width: size.width, height: size.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .contentShape(RoundedRectangle(cornerRadius: 8))
+                        .onAppear {
+                            if let index = detailImageViewModel.selection.firstIndex(where: { $0.id == photoURL } ),
+                               detailImageViewModel.selection[index].image == nil {
+                                detailImageViewModel.selection[index].image = image
+                            }
+                        }
+                        .onTapGesture {
+                            detailImageViewModel.presentView(selectedID: photoURL)
+                        }
                 }
             } else {
                 Color.clear
             }
         case .empty:
-            LoadingView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(ColorConstant.bgSecondary)
-                )
+            RoundedRectangle(cornerRadius: 8)
+                .fill(ColorConstant.bgSecondary)
         case .failure(_ ):
             Image(systemName: "x.circle")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             
         @unknown default:
-            LoadingView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(ColorConstant.bgSecondary)
-                )
+            RoundedRectangle(cornerRadius: 8)
+                .fill(ColorConstant.bgSecondary)
         }
     }
 }

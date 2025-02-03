@@ -45,7 +45,7 @@ struct AppWideOverlayModifier<ViewContent: View>: ViewModifier {
         viewID = UUID().uuidString
         guard let viewID else { return }
         
-        withAnimation(animation) {
+        withAnimation(.snappy(duration: 0.35)) {
             overlayStore.overlayViews.append(.init(id: viewID, content: .init(content)))
         }
     }
