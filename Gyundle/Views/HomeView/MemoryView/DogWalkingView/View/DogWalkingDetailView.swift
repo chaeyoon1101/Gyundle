@@ -9,10 +9,12 @@ import SwiftUI
 import MapKit
 
 struct DogWalkingDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
+    
     @FocusState var isFocused: Bool
     @State private var isMapExpanded: Bool = false
-    
+    @State private var showDeleteConfirmation: Bool = false
     @State private var selectedMarker: DogWalkingMarker? = nil
     
     @Binding var memory: DogWalkingMemory
@@ -113,6 +115,40 @@ struct DogWalkingDetailView: View {
         }
         .toolbarRole(.editor)
         .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Label("삭제", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .foregroundStyle(ColorConstant.fgPrimary)
+                        .fontWeight(.bold)
+                }
+                .confirmationDialog(
+                    "삭제 확인 알림",
+                    isPresented: $showDeleteConfirmation,
+                    actions: {
+                        Button("취소", role: .cancel) {
+                            print("취소")
+                        }
+                        
+                        Button("삭제하기", role: .destructive) {
+                            Task {
+                                await dogWalkingMemoryViewModel.deleteMemory(memory)
+                            }
+                            dismiss()
+                        }
+                    },
+                    message: {
+                        Text("이 산책기록를 삭제하시겠습니까? 되돌릴 수 없습니다.")
+                    }
+                )
+            }
+        }
         .sheet(item: $selectedMarker, content: { marker in
             DogWalkingMarkingView(marker: marker) { action in
                 switch action {

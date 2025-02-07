@@ -48,6 +48,19 @@ class DogWalkingMemoryViewModel: ObservableObject {
         }
     }
     
+    func deleteMemory(_ memory: DogWalkingMemory) async {
+        do {
+            try await FirebaseManager.shared.deleteMemory(memory)
+            print("dog walking Memory 삭제 성공:", memory.uid)
+            
+            let key = MemoryKey.convertToKey(from: memory.date)
+            await MainActor.run {
+                dogWalkingMemories[key]?.removeAll(where: { $0.uid == memory.uid })
+            }
+        } catch {
+            print("dog walking Memory 삭제 실패:", error.localizedDescription)
+        }
+    }
     func fetchMemories(from date: Date) async {
         let key = MemoryKey.convertToKey(from: date)
         
