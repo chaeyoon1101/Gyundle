@@ -29,7 +29,9 @@ final class ImageCacheManager {
     }
     
     @MainActor
-    func setImage(_ image: Image, forKey key: String) {
+    func setImage(_ image: Image, forKey key: String?) {
+        guard let key else { return }
+        
         cache.setObject(image.asUIImage(), forKey: key as NSString)
     }
 }

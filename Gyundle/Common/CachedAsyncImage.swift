@@ -8,21 +8,23 @@
 import SwiftUI
 
 struct CachedAsyncImage<Content>: View where Content: View {
-    private let url: URL
+    private let url: URL?
+    private let scale: CGFloat
     private let content: (AsyncImagePhase) -> Content
     
-    init(url: URL?, @ViewBuilder content: @escaping (AsyncImagePhase) -> Content) {
-        self.url = url ?? URL(string: "")!
+    init(url: URL?, scale: CGFloat = 1, @ViewBuilder content: @escaping (AsyncImagePhase) -> Content) {
+        self.url = url
+        self.scale = scale
         self.content = content
     }
     
     var body: some View {
-        if let cachedImage = ImageCacheManager.shared.getImage(forKey: url.absoluteString) {
+        if let cachedImage = ImageCacheManager.shared.getImage(forKey: url?.absoluteString) {
             content(.success(cachedImage))
         } else {
-            AsyncImage(url: url) { phase in
+            AsyncImage(url: url, scale: scale) { phase in
                 if case .success(let image) = phase {
-                    let _ = ImageCacheManager.shared.setImage(image, forKey: url.absoluteString)
+                    let _ = ImageCacheManager.shared.setImage(image, forKey: url?.absoluteString)
                 }
                 content(phase)
             }

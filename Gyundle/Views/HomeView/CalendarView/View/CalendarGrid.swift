@@ -38,32 +38,7 @@ struct CalendarGrid: View {
                 }
         )
     }
-    
-    @ViewBuilder
-    func CalendarCell(day: Int) -> some View {
-        Image("TestImage")
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .opacity(0.7)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.clear)
-                    .stroke(
-                        calendarViewModel.isSelectedDate(day: day) ?
-                        ColorConstant.accent : calendarViewModel.isToday(day: day) ?
-                        ColorConstant.fgPrimary : Color.clear,
-                        
-                        lineWidth: 4
-                    )
-                
-                Text("\(day)")
-                    .bold()
-            }
-            .onTapGesture {
-                calendarViewModel.selectDate(day: day)
-            }
-    }
+
 }
 
 extension CalendarGrid {
