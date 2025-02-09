@@ -25,4 +25,11 @@ enum FirebaseError: LocalizedError {
             return "알 수 없는 에러가 발생했습니다. 다시 시도해주세요."
         }
     }
+    
+    var recoverySuggestion: String? {
+        switch self {
+        case .uploadFailed, .fetchFailed, .documentNotFound, .unknownError:
+            "문제가 발생했습니다. 다시 시도해주세요."
+        }
+    }
 }

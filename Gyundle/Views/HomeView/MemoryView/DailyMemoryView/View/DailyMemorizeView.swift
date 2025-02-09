@@ -2,7 +2,9 @@ import SwiftUI
 import PhotosUI
 
 struct DailyMemorizeView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
+    
     @StateObject private var photosPickerViewModel = PhotosPickerViewModel()
     @StateObject private var keyboardResponder = KeyboardResponder()
     
@@ -11,7 +13,15 @@ struct DailyMemorizeView: View {
     // ToolbarItemGroup(placement: .keyboard)가 간혈적으로 나타나지 않는 버그를 위한 프로퍼티
     @State var disabled: Bool = true
     
+    @State var memory: DailyMemory
     let date: Date
+    var isUpdating: Bool
+    
+    init(date: Date = Date(), memory: DailyMemory = .defaultMemory(), isUpdating: Bool = false) {
+        self.date = date
+        self.memory = memory
+        self.isUpdating = isUpdating
+    }
     
     var body: some View {
         NavigationStack {
@@ -22,14 +32,7 @@ struct DailyMemorizeView: View {
                     PhotosView()
                     
                     DailyMemoryTextEditor(
-                        enteredText: Binding(
-                            get: {
-                                dailyMemoryViewModel.selectedMemory?.text ?? ""
-                            },
-                            set: { newValue in
-                                dailyMemoryViewModel.selectedMemory?.text = newValue
-                            }
-                        ),
+                        enteredText: $memory.text,
                         isFocused: Binding(
                             get: {
                                 $isFocused
@@ -69,7 +72,7 @@ struct DailyMemorizeView: View {
                 
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dailyMemoryViewModel.isPresentedMemorizeView = false
+                        dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundStyle(ColorConstant.fgPrimary)
@@ -103,12 +106,16 @@ struct DailyMemorizeView: View {
                 changeViewStatusToActive()
             }
             
-            if dailyMemoryViewModel.selectedMemory?.photosURL.isEmpty == false {
+            if memory.photosURL.isEmpty == false {
                 photosPickerViewModel.convertToPhotosPickerItem(
-                    from: dailyMemoryViewModel.selectedMemory?.photosURL ?? []
+                    from: memory.photosURL
                 )
             }
         }
+        .toastView(
+            isShowing: $dailyMemoryViewModel.showError,
+            message: dailyMemoryViewModel.errorMessage
+        )
     }
     
     @ViewBuilder
@@ -151,13 +158,17 @@ struct DailyMemorizeView: View {
     private func uploadMemory() {
         Task {
             await uploadPhoto()
-            dailyMemoryViewModel.selectedMemory?.day = date.toDay()
-            dailyMemoryViewModel.selectedMemory?.date = calculateUploadDate()
+            memory.day = date.toDay()
+            memory.date = calculateUploadDate()
             
-            if isEditing() {
-                await dailyMemoryViewModel.updateMemory()
+            if isUpdating {
+                await dailyMemoryViewModel.updateMemory(memory, onSuccess: {
+                    dismiss()
+                })
             } else {
-                await dailyMemoryViewModel.uploadMemory()
+                await dailyMemoryViewModel.uploadMemory(memory, onSuccess: {
+                    dismiss()
+                })
             }
         }
     }
@@ -165,21 +176,10 @@ struct DailyMemorizeView: View {
     private func uploadPhoto() async {
         let photosURL = await photosPickerViewModel.uploadPhoto(to: .dailyMemory)
 
-        dailyMemoryViewModel.selectedMemory?.photosURL = photosURL
+        memory.photosURL = photosURL
     }
     
-    // 작성하고있는 데이터의 uuid가 이미 존재한다면 편집 중 그렇지 않으면 새로 작성 중
-    private func isEditing() -> Bool {
-        let key = MemoryKey.convertToKey(from: date)
-         
-        let containsSelectedMemory = dailyMemoryViewModel.dailyMemories[key]?.contains(
-            where: { $0.uid == dailyMemoryViewModel.selectedMemory?.uid }
-        )
-        
-        return containsSelectedMemory ?? false
-    }
-    
-    // 24일의 기록을 25일에 작성 할수도 있기 때문에
+    // 24일의 기록을 25일에 작성 할 수도 있기 때문에
     // 선택된 날짜와 작성 당시 시간분초를 합쳐서 저장
     private func calculateUploadDate() -> Date {
         let calendar = Calendar.current

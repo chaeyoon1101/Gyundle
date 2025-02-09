@@ -5,8 +5,9 @@ struct HomeView: View {
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     
-    // MARK: View 상태 관리
-    @State private var showingMemorizeView: Bool = false
+    // MARK: Present 상태 관리
+    @State private var showMemorizeView: Bool = false
+    @State private var showDailyMemoriesView: Bool = false
     
     var body: some View {
         ZStack {
@@ -24,10 +25,10 @@ struct HomeView: View {
                     DailyMemoryView(date: selectedDate)
                 }
             }
-            .blur(radius: showingMemorizeView ? 3 : 0)
+            .blur(radius: showMemorizeView ? 3 : 0)
             .scrollClipDisabled()
             
-            if showingMemorizeView {
+            if showMemorizeView {
                 MemorizeView()
                     .align(.bottom)
                     .padding(.bottom, 120)
@@ -40,7 +41,7 @@ struct HomeView: View {
         .padding()
         .safeAreaPadding(.top, getSafeAreaTop())
         .toolbar(.hidden, for: .navigationBar)
-        .fullScreenCover(isPresented: $dailyMemoryViewModel.isPresentedMemorizeView) {
+        .fullScreenCover(isPresented: $showDailyMemoriesView) {
             DailyMemorizeView(date: calendarViewModel.selectedDate)
         }
         .fullScreenCover(isPresented: $dogWalkingMemoryViewModel.showMemorizeView) {
@@ -55,7 +56,7 @@ struct HomeView: View {
     private func MemorizeButton() -> some View {
         Button {
             withAnimation {
-                showingMemorizeView.toggle()
+                showMemorizeView.toggle()
             }
         } label: {
             Image(systemName: "dog.fill")
@@ -85,8 +86,7 @@ struct HomeView: View {
                 image: "dog.write.diary",
                 text: "일기쓰기",
                 onTapped: {
-                    dailyMemoryViewModel.selectedMemory = DailyMemory.defaultMemory()
-                    dailyMemoryViewModel.isPresentedMemorizeView = true
+                    showDailyMemoriesView = true
                 }
             )
         }
@@ -117,7 +117,7 @@ struct HomeView: View {
         }
         .onTapGesture {
             onTapped()
-            showingMemorizeView.toggle()
+            showMemorizeView.toggle()
         }
     }
 }

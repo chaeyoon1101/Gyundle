@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-class DogWalkingMemoryViewModel: ObservableObject {
+class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
     @Published var dogWalkingMemories: [MemoryKey: [DogWalkingMemory]] = [:]
     
     @Published var isUploading: Bool = false
@@ -17,10 +17,13 @@ class DogWalkingMemoryViewModel: ObservableObject {
     @Published var showMemorizeView: Bool = false
     @Published var showDetailView: Bool = false
     
+    // Error Handling
+    @Published var showError: Bool = false
+    @Published var errorMessage: String?
     
     // MARK: Memory
     
-    func uploadMemory(_ memory: DogWalkingMemory) async {
+    func uploadMemory(_ memory: DogWalkingMemory, onSuccess: @escaping () -> () = {}) async {
         await changeUploadState(to: true)
 
         do {
@@ -28,39 +31,54 @@ class DogWalkingMemoryViewModel: ObservableObject {
             
             print("Dog Walking Memory Upload 성공:", memory.uid)
             
-            let key = MemoryKey.convertToKey(from: memory.date)
             await MainActor.run {
+                let key = MemoryKey.convertToKey(from: memory.date)
                 dogWalkingMemories[key, default: []].append(memory)
+                
+                onSuccess()
             }
+        } catch let error as LocalizedError {
+            print("Dog Walking Memory Upload 실패:", error.localizedDescription)
+            await presentError(message: error.recoverySuggestion)
         } catch {
             print("Dog Walking Memory Upload 실패:", error.localizedDescription)
+            await presentError()
         }
         
         await changeUploadState(to: false)
     }
     
-    func updateMemory(_ memory: DogWalkingMemory) async {
+    func updateMemory(_ memory: DogWalkingMemory, onSuccess: @escaping () -> () = {}) async {
         do {
             try await FirebaseManager.shared.updateMemory(memory)
             print("Dog Walking Memory Update 성공:", memory.uid)
+            
+            await MainActor.run { onSuccess() }
+        } catch let error as LocalizedError {
+            print("Dog Walking Memory Update 실패:", error.localizedDescription)
+            await presentError(message: error.recoverySuggestion)
         } catch {
             print("Dog Walking Memory Update 실패:", error.localizedDescription)
+            await presentError()
         }
     }
     
-    func deleteMemory(_ memory: DogWalkingMemory) async {
+    func deleteMemory(_ memory: DogWalkingMemory, onSuccess: @escaping () -> () = {}) async {
         do {
             try await FirebaseManager.shared.deleteMemory(memory)
             print("dog walking Memory 삭제 성공:", memory.uid)
             
-            let key = MemoryKey.convertToKey(from: memory.date)
             await MainActor.run {
+                let key = MemoryKey.convertToKey(from: memory.date)
                 dogWalkingMemories[key]?.removeAll(where: { $0.uid == memory.uid })
+                
+                onSuccess()
             }
         } catch {
             print("dog walking Memory 삭제 실패:", error.localizedDescription)
         }
     }
+    
     func fetchMemories(from date: Date) async {
         let key = MemoryKey.convertToKey(from: date)
         
@@ -99,5 +117,11 @@ class DogWalkingMemoryViewModel: ObservableObject {
     @MainActor
     private func changeUploadState(to state: Bool) {
         isUploading = state
+    }
+    
+    @MainActor
+    func presentError(message: String? = "잠시 후 다시 시도해주세요.") {
+        showError = true
+        errorMessage = message
     }
 }

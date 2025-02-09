@@ -84,8 +84,9 @@ struct DogWalkingSummaryView: View {
                 if !dogWalkingMemoryViewModel.isUploading {
                     Button("완료") {
                         Task {
-                            await dogWalkingMemoryViewModel.uploadMemory(memory)
-                            dogWalkingMemoryViewModel.showMemorizeView = false
+                            await dogWalkingMemoryViewModel.uploadMemory(memory, onSuccess: {
+                                dogWalkingMemoryViewModel.showMemorizeView = false
+                            })
                         }
                     }
                     .foregroundStyle(ColorConstant.accent)
@@ -95,7 +96,10 @@ struct DogWalkingSummaryView: View {
                 }
             }
         }
-        
+        .toastView(
+            isShowing: $dogWalkingMemoryViewModel.showError,
+            message: dogWalkingMemoryViewModel.errorMessage
+        )
     }
     
     @ViewBuilder

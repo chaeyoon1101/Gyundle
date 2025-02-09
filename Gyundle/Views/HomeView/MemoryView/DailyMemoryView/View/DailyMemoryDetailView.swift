@@ -8,49 +8,46 @@
 import SwiftUI
 
 struct DailyMemoryDetailView: View {
-    @EnvironmentObject var dailyMemoryViewModel: DailyMemoryViewModel
-    
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     
     @State private var showDeleteConfirmation: Bool = false
+    @State private var showEditView: Bool = false
+    
+    @Binding var memory: DailyMemory
     
     var body: some View {
         NavigationStack {
             VStack {
                 ScrollView(.vertical) {
-                    
-                    if let memory = dailyMemoryViewModel.selectedMemory {
-                        VStack {
-                            if !memory.photosURL.isEmpty {
-                                PhotoGridView(photosURL: memory.photosURL)
-                                    .frame(height: getScreenWidth() / CGFloat(memory.photosURL.count) - 4)
-                            }
-                            
-                            Text(memory.text)
-                                .align(.leading)
-                                .padding()
+                    VStack {
+                        if !memory.photosURL.isEmpty {
+                            PhotoGridView(photosURL: memory.photosURL)
+                                .frame(height: getScreenWidth() / CGFloat(memory.photosURL.count) - 4)
                         }
-                        .navigationTitle(memory.date.formatting("M월 d일의 기억"))
-                        .navigationBarTitleDisplayMode(.inline)
+                        
+                        Text(memory.text)
+                            .align(.leading)
+                            .padding()
                     }
+                    .navigationTitle(memory.date.formatting("M월 d일의 기억"))
+                    .navigationBarTitleDisplayMode(.inline)
                 }
                 .padding(4)
             }
+            .toolbarRole(.editor)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        isPresented = false
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(ColorConstant.fgSecondary)
-                            .fontWeight(.bold)
-                    }
-                }
-                
                 ToolbarItem(placement: .topBarTrailing) {
                     ExtraButton()
                 }
             }
+            .fullScreenCover(isPresented: $showEditView) {
+                DailyMemorizeView(memory: memory, isUpdating: true)
+            }
+            .toastView(
+                isShowing: $dailyMemoryViewModel.showError,
+                message: dailyMemoryViewModel.errorMessage
+            )
         }
     }
     
@@ -75,9 +72,10 @@ struct DailyMemoryDetailView: View {
                 
                 Button("삭제하기", role: .destructive) {
                     Task {
-                        await dailyMemoryViewModel.deleteMemory()
+                        await dailyMemoryViewModel.deleteMemory(memory, onSuccess: {
+                            dismiss()
+                        })
                     }
-                    isPresented = false
                 }
             },
             message: {
@@ -98,8 +96,7 @@ struct DailyMemoryDetailView: View {
     @ViewBuilder
     func EditButton() -> some View {
         Button {
-            isPresented = false
-            dailyMemoryViewModel.isPresentedMemorizeView = true
+            showEditView = true
         } label: {
             Label("편집", systemImage: "pencil")
         }

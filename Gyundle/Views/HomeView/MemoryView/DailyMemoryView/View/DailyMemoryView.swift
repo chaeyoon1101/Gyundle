@@ -3,37 +3,33 @@ import SwiftUI
 struct DailyMemoryView: View {
     @EnvironmentObject private var dailyMemoryViewModel: DailyMemoryViewModel
     
-    @State private var isDetailViewPresented: Bool = false
+    @State private var showDetailView: Bool = false
     let date: Date
     
     var body: some View {
-        if let memory = dailyMemoryViewModel.getMemory(from: date) {
+        if let bindingMemory = Binding(dailyMemoryViewModel.getMemory(from: date)) {
+            let memory = bindingMemory.wrappedValue
             HeaderView(memory)
                 .padding(.bottom, -20)
             
-            VStack {
-                if !memory.photosURL.isEmpty {
-                    PhotoGridView(photosURL: memory.photosURL)
-                        .frame(height: 120)
+            NavigationLink {
+                DailyMemoryDetailView(memory: bindingMemory)
+            } label: {
+                VStack {
+                    if !memory.photosURL.isEmpty {
+                        PhotoGridView(photosURL: memory.photosURL)
+                            .frame(height: 120)
+                            .padding(4)
+                    }
+                    
+                    MemoryContentView(memory)
                         .padding(4)
                 }
-                
-                MemoryContentView(memory)
-                    .padding(4)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        ColorConstant.bgContent
-                            .shadow(.drop(color: .primary.opacity(0.2), radius: 4))
-                    )
-                    .onTapGesture {
-                        dailyMemoryViewModel.selectedMemory = memory
-                        isDetailViewPresented = true
-                    }
-            )
-            .sheet(isPresented: $isDetailViewPresented) {
-                DailyMemoryDetailView(isPresented: $isDetailViewPresented)
+                .background(
+                    ColorConstant.bgContent
+                        .shadow(.drop(color: .primary.opacity(0.2), radius: 2)),
+                    in: .rect(cornerRadius: 15)
+                )
             }
         }
     }

@@ -22,4 +22,13 @@ enum AuthError: LocalizedError {
             return "애플 로그인 실패했습니다."
         }
     }
+    
+    var recoverySuggestion: String? {
+        switch self {
+        case .userNotFound:
+            "문제가 발생했습니다. 다시 시도해주세요."
+        case .appleLoginFailed, .kakaoLoginFailed:
+            "다시 로그인 시도 해주세요."
+        }
+    }
 }

@@ -138,9 +138,10 @@ struct DogWalkingDetailView: View {
                         
                         Button("삭제하기", role: .destructive) {
                             Task {
-                                await dogWalkingMemoryViewModel.deleteMemory(memory)
+                                await dogWalkingMemoryViewModel.deleteMemory(memory, onSuccess: {
+                                    dismiss()
+                                })
                             }
-                            dismiss()
                         }
                     },
                     message: {

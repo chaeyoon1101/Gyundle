@@ -51,13 +51,14 @@ class DetailImageViewModel: ObservableObject {
     func dismissView() {
         withAnimation(.snappy(duration: 0.35)) { [weak self] in
             guard let self else { return }
-            isShowing = false
+            
+            self.isShowing = false
             self.selectedImage = nil
+        } completion: {
+            // dismiss 애니메이션이 끝나면 뷰의 위치 및 크기를 초기화
+            self.position = .zero
+            self.scale = 1
         }
-        
-        // pop 애니메이션이 끝나면 뷰의 위치 및 크기를 초기화
-        self.position = .zero
-        self.scale = 1
     }
     
     func updateTransform(position: CGSize, scale: CGFloat) {

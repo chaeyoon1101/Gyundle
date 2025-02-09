@@ -11,11 +11,21 @@ extension View {
     @ViewBuilder
     func appWideOverlay<Content: View>(
         isShowing: Binding<Bool>,
-        animation: Animation? = nil,
         @ViewBuilder content: () -> Content
     ) -> some View {
         self
-            .modifier(AppWideOverlayModifier(isShowing: isShowing, animation: animation, content: content))
+            .modifier(AppWideOverlayModifier(isShowing: isShowing, content: content))
+    }
+    
+    @ViewBuilder
+    func toastView(
+        isShowing: Binding<Bool>,
+        message: String?
+    ) -> some View {
+        self
+            .modifier(AppWideOverlayModifier(isShowing: isShowing, content: {
+                ToastView(isShowing: isShowing, message: message)
+            }))
     }
 }
 
@@ -23,7 +33,6 @@ struct AppWideOverlayModifier<ViewContent: View>: ViewModifier {
     @EnvironmentObject private var overlayStore: AppWideOverlayStore
     
     @Binding var isShowing: Bool
-    var animation: Animation?
     @ViewBuilder var content: ViewContent
     
     @State private var viewID: String?
@@ -43,9 +52,8 @@ struct AppWideOverlayModifier<ViewContent: View>: ViewModifier {
         guard overlayStore.window != nil, viewID == nil else { return }
         
         viewID = UUID().uuidString
-        guard let viewID else { return }
-        
-        withAnimation(.snappy(duration: 0.35)) {
+
+        if let viewID {
             overlayStore.overlayViews.append(.init(id: viewID, content: .init(content)))
         }
     }
@@ -53,9 +61,7 @@ struct AppWideOverlayModifier<ViewContent: View>: ViewModifier {
     private func removeView() {
         guard let viewID else { return }
         
-        withAnimation(animation) {
-            overlayStore.overlayViews.removeAll(where: { $0.id == viewID } )
-        }
+        overlayStore.overlayViews.removeAll(where: { $0.id == viewID } )
         
         self.viewID = nil
     }

@@ -61,9 +61,10 @@ struct PhotoGridView: View {
         case .empty:
             RoundedRectangle(cornerRadius: 8)
                 .fill(ColorConstant.bgSecondary)
+            
         case .failure(_ ):
-            Image(systemName: "x.circle")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            RoundedRectangle(cornerRadius: 8)
+                .fill(ColorConstant.bgSecondary)
             
         @unknown default:
             RoundedRectangle(cornerRadius: 8)
