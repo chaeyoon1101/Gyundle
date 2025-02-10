@@ -16,18 +16,36 @@ struct DetailImageView: View {
              
             TabView(selection: $detailImageViewModel.selectedImage) {
                 
-                ForEach(detailImageViewModel.selection, id: \.self) { item in
-                    if let image = item.image {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .tag(item)
-                            .offset(detailImageViewModel.position)
-                            .scaleEffect(detailImageViewModel.scale)
-                    } else {
-                        LoadingView()
-                            .tag(item)
+                ForEach(detailImageViewModel.selection) { item in
+                    
+                    VStack {
+                        if let image = item.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .offset(detailImageViewModel.position)
+                                .scaleEffect(detailImageViewModel.scale)
+                        } else {
+                            CachedAsyncImage(url: URL(string: item.id)) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .offset(detailImageViewModel.position)
+                                        .scaleEffect(detailImageViewModel.scale)
+                                case .empty:
+                                    LoadingView()
+                                case .failure(_):
+                                    LoadingView()
+                                @unknown default:
+                                    LoadingView()
+                                }
+                            }
+                        }
                     }
+                    .tag(item)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .always))

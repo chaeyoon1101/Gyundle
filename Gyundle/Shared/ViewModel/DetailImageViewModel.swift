@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 class DetailImageViewModel: ObservableObject {
     
-    struct IdentifiableImage: Hashable {
+    struct IdentifiableImage: Identifiable, Hashable {
         let id: String
         var image: Image?
         
@@ -33,7 +33,7 @@ class DetailImageViewModel: ObservableObject {
     @Published var position: CGSize = .zero
     @Published var scale: CGFloat = 1
     
-    func presentView(selectedID: String) {
+    func presentView(selectedID: String, selection: [IdentifiableImage]) {
         guard let selectedImage = selection.first(where: { $0.id == selectedID }) else {
             print("Selection 중에 선택한 이미지가 없음")
             print(selectedID, selection)
@@ -43,6 +43,7 @@ class DetailImageViewModel: ObservableObject {
         withAnimation(.snappy(duration: 0.35)) { [weak self] in
             guard let self else { return }
             
+            self.selection = selection
             self.selectedImage = selectedImage
             self.isShowing = true
         }
@@ -53,6 +54,7 @@ class DetailImageViewModel: ObservableObject {
             guard let self else { return }
             
             self.isShowing = false
+            self.selection = []
             self.selectedImage = nil
         } completion: {
             // dismiss 애니메이션이 끝나면 뷰의 위치 및 크기를 초기화

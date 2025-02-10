@@ -22,11 +22,6 @@ struct PhotoGridView: View {
                 }
             }
         }
-        .onFirstAppear {
-            // 처음 나타날 때 모든 사진을 id만 지정해놓고 이후에 image를 Load해서 추가해주는 방식
-            let selection = photosURL.map { DetailImageViewModel.IdentifiableImage(id: $0) }
-            detailImageViewModel.selection = selection
-        }
         .appWideOverlay(isShowing: $detailImageViewModel.isShowing) {
             DetailImageView()
                 .environmentObject(detailImageViewModel)
@@ -45,14 +40,9 @@ struct PhotoGridView: View {
                         .frame(width: size.width, height: size.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .contentShape(RoundedRectangle(cornerRadius: 8))
-                        .onAppear {
-                            if let index = detailImageViewModel.selection.firstIndex(where: { $0.id == photoURL } ),
-                               detailImageViewModel.selection[index].image == nil {
-                                detailImageViewModel.selection[index].image = image
-                            }
-                        }
                         .onTapGesture {
-                            detailImageViewModel.presentView(selectedID: photoURL)
+                            let selection = photosURL.map { DetailImageViewModel.IdentifiableImage(id: $0) }
+                            detailImageViewModel.presentView(selectedID: photoURL, selection: selection)
                         }
                 }
             } else {

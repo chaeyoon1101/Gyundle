@@ -172,13 +172,11 @@ struct DogWalkingMarkingView: View {
                     .padding(.horizontal, 6)
                     .clipShape(.rect(cornerRadius: 12))
                     .contentShape(.rect(cornerRadius: 12))
-                    .onFirstAppear {
-                        let image = Image(uiImage: image)
-                        let selection = [DetailImageViewModel.IdentifiableImage(id: imageURL, image: image)]
-                        detailImageViewModel.selection = selection
-                    }
                     .onTapGesture {
-                        detailImageViewModel.presentView(selectedID: imageURL)
+                        detailImageViewModel.presentView(
+                            selectedID: imageURL,
+                            selection: [DetailImageViewModel.IdentifiableImage(id: imageURL, image: Image(uiImage: image))]
+                        )
                     }
             } else {
                 RoundedRectangle(cornerRadius: 12)
