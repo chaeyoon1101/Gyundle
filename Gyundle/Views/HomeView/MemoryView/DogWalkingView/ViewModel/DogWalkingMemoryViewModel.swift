@@ -39,10 +39,10 @@ class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
             }
         } catch let error as LocalizedError {
             print("Dog Walking Memory Upload 실패:", error.localizedDescription)
-            await presentError(message: error.recoverySuggestion)
+            presentError(message: error.recoverySuggestion)
         } catch {
             print("Dog Walking Memory Upload 실패:", error.localizedDescription)
-            await presentError()
+            presentError()
         }
         
         await changeUploadState(to: false)
@@ -56,10 +56,10 @@ class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
             await MainActor.run { onSuccess() }
         } catch let error as LocalizedError {
             print("Dog Walking Memory Update 실패:", error.localizedDescription)
-            await presentError(message: error.recoverySuggestion)
+            presentError(message: error.recoverySuggestion)
         } catch {
             print("Dog Walking Memory Update 실패:", error.localizedDescription)
-            await presentError()
+            presentError()
         }
     }
     
@@ -82,6 +82,9 @@ class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
     func fetchMemories(from date: Date) async {
         let key = MemoryKey.convertToKey(from: date)
         
+        // 캘린더 달 변경 시 처음 한번만 데이터 fetch 하기
+        guard dogWalkingMemories[key] == nil else { return }
+        
         do {
             let fetchedMemories = try await FirebaseManager.shared.fetchMemories(from: key)
             
@@ -92,8 +95,13 @@ class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
             }
             
             print("Dog Walking Memories fetch 성공")
-        } catch {
+        } catch let error as AuthError {
             print("Dog Walking Memories Fetch 실패:", error.localizedDescription)
+        } catch {
+            print("\(key.toString()) Dog Walking Memories가 존재하지않음:", error.localizedDescription)
+            await MainActor.run {
+                self.dogWalkingMemories[key] = []
+            }
         }
     }
     
@@ -119,9 +127,10 @@ class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
         isUploading = state
     }
     
-    @MainActor
     func presentError(message: String? = "잠시 후 다시 시도해주세요.") {
-        showError = true
-        errorMessage = message
+        DispatchQueue.main.async {
+            self.showError = true
+            self.errorMessage = message
+        }
     }
 }

@@ -38,10 +38,6 @@ struct ContentView: View {
         .environmentObject(calendarViewModel)
         .environmentObject(dailyMemoryViewModel)
         .environmentObject(dogWalkingMemoryViewModel)
-        .task {
-            await dailyMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
-            await dogWalkingMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
-        }
     }
     
     @ViewBuilder

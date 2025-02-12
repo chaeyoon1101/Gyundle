@@ -12,10 +12,10 @@ struct CalendarView: View {
             CalendarGrid()
         }
         .padding(.horizontal, 4)
-        .onChange(of: calendarViewModel.currentPageDate) { _, newValue in
+        .onChange(of: calendarViewModel.currentPageDate, initial: true) { _, newValue in
             Task {
-                await dailyMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
-                await dogWalkingMemoryViewModel.fetchMemories(from: calendarViewModel.currentPageDate)
+                await dailyMemoryViewModel.fetchMemories(from: newValue)
+                await dogWalkingMemoryViewModel.fetchMemories(from: newValue)
             }
         }
     }

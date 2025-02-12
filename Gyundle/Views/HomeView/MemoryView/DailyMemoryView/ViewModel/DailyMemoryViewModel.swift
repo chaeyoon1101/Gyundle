@@ -21,10 +21,10 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
             }
         } catch let error as LocalizedError {
             print("Memory 업로드 실패:", error.localizedDescription)
-            await presentError(message: error.recoverySuggestion)
+            presentError(message: error.recoverySuggestion)
         } catch {
             print("Memory 업로드 실패:", error.localizedDescription)
-            await presentError()
+            presentError()
         }
     }
     
@@ -41,10 +41,10 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
             print("Memory 삭제 성공")
         } catch let error as LocalizedError {
             print("Memory 업로드 실패:", error.localizedDescription)
-            await presentError(message: error.recoverySuggestion)
+            presentError(message: error.recoverySuggestion)
         } catch {
             print("Memory 업로드 실패:", error.localizedDescription)
-            await presentError()
+            presentError()
         }
     }
     
@@ -61,15 +61,18 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
             print("Memory 업데이트 성공")
         } catch let error as LocalizedError {
             print("Memory 업로드 실패:", error.localizedDescription)
-            await presentError(message: error.recoverySuggestion)
+            presentError(message: error.recoverySuggestion)
         } catch {
             print("Memory 업로드 실패:", error.localizedDescription)
-            await presentError()
+            presentError()
         }
     }
     
     func fetchMemories(from date: Date) async {
         let key = MemoryKey.convertToKey(from: date)
+        
+        // 캘린더 달 변경 시 처음 한번만 데이터 fetch 하기
+        guard dailyMemories[key] == nil else { return }
         
         do {
             let memories = try await FirebaseManager.shared.fetchMemories(from: key)
@@ -79,8 +82,13 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
                     self.dailyMemories[key] = dailyMemories
                 }
             }
+        } catch let error as AuthError {
+            print("memory fetch 실패: ", error.localizedDescription)
         } catch {
-            print("memory fetch 실패: ", error)
+            print("\(key.toString()) Daily Memories가 존재하지않음:", error.localizedDescription)
+            await MainActor.run {
+                self.dailyMemories[key] = []
+            }
         }
     }
     
@@ -91,10 +99,11 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
         return dailyMemories[key]?.first { $0.day == date.toDay() }
     }
     
-    @MainActor
     func presentError(message: String? = "잠시 후 다시 시도해주세요.") {
-        errorMessage = message
-        showError = true
+        DispatchQueue.main.async {
+            self.errorMessage = message
+            self.showError = true
+        }
     }
 }
 
