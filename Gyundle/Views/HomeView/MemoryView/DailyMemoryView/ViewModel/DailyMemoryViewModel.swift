@@ -85,22 +85,10 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
     }
     
     // 선택한 날짜의 데이터를 가져오기
-    func getMemory(from date: Date) -> Binding<DailyMemory?> {
+    func getMemory(from date: Date) -> DailyMemory? {
         let key = MemoryKey.convertToKey(from: date)
         
-        return Binding(
-            get: {
-                self.dailyMemories[key]?.first { $0.day == date.toDay() }
-            }, set: { newValue in
-                guard let updatedValue = newValue else { return }
-                
-                self.dailyMemories[key]?.update(
-                    keyPath: \.uid,
-                    matching: updatedValue.uid,
-                    with: updatedValue
-                )
-            }
-        )
+        return dailyMemories[key]?.first { $0.day == date.toDay() }
     }
     
     @MainActor

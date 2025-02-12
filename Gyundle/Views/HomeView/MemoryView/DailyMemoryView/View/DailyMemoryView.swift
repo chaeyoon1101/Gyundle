@@ -7,13 +7,12 @@ struct DailyMemoryView: View {
     let date: Date
     
     var body: some View {
-        if let bindingMemory = Binding(dailyMemoryViewModel.getMemory(from: date)) {
-            let memory = bindingMemory.wrappedValue
+        if let memory = dailyMemoryViewModel.getMemory(from: date) {
             HeaderView(memory)
                 .padding(.bottom, -20)
             
             NavigationLink {
-                DailyMemoryDetailView(memory: bindingMemory)
+                DailyMemoryDetailView(memory: memory)
             } label: {
                 VStack {
                     if !memory.photosURL.isEmpty {

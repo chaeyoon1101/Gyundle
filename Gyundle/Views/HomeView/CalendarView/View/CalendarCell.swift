@@ -90,7 +90,7 @@ struct CalendarCell: View {
         
     private func getRepresentativeImageURL() -> URL? {
         // dailyMemory
-        if let dailyMemory = dailyMemoryViewModel.getMemory(from: currentDate).wrappedValue,
+        if let dailyMemory = dailyMemoryViewModel.getMemory(from: currentDate),
            let imageURL = dailyMemory.photosURL.first {
             return URL(string: imageURL)
         }

@@ -14,7 +14,7 @@ struct DailyMemoryDetailView: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var showEditView: Bool = false
     
-    @Binding var memory: DailyMemory
+    var memory: DailyMemory
     
     var body: some View {
         NavigationStack {

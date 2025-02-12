@@ -55,21 +55,27 @@ class PhotosPickerViewModel: ObservableObject {
         }
         
         var downloadUrls: [String] = []
-        for selection in photoSelections {
+        for attachment in photoAttachments {
+            guard attachment.isDownloaded == false else {
+                if let url = attachment.photoPickerItem?.itemIdentifier {
+                    downloadUrls.append(url)
+                }
+                continue
+            }
+            
             do {
-                if let data = try await selection.loadTransferable(type: Data.self) {
+                if let data = try await attachment.photoPickerItem?.loadTransferable(type: Data.self) {
                     let downloadURL = try await FirebaseManager.shared.uploadPhoto(with: data, to: storage.folderName)
                     
                     downloadUrls.append(downloadURL)
                 }
             } catch {
                 print("사진 업로드 실패:", error.localizedDescription)
-                
-                await MainActor.run {
-                    isUploading = false
-                }
-                return []
             }
+        }
+        
+        await MainActor.run {
+            isUploading = false
         }
         
         return downloadUrls
@@ -102,6 +108,7 @@ class PhotosPickerViewModel: ObservableObject {
         
         withAnimation {
             photoAttachments = downloadedAttachments + newAttachments
+            print(photoAttachments.map { $0.photoPickerItem?.itemIdentifier })
         }
     }
 }
