@@ -153,6 +153,7 @@ struct DailyMemorizeView: View {
                 photosPickerViewModel.showPhotosPicker = false
             }
         }
+        .toastView(isShowing: $photosPickerViewModel.showError, message: photosPickerViewModel.errorMessage)
     }
     
     private func uploadMemory() {

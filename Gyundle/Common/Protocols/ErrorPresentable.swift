@@ -11,6 +11,5 @@ protocol ErrorPresentable {
     var showError: Bool { get set }
     var errorMessage: String? { get set }
     
-    @MainActor
     func presentError(message: String?)
 }

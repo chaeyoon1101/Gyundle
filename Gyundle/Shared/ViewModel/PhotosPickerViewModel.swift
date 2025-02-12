@@ -36,7 +36,7 @@ final class PhotoAttachment {
     }
 }
 
-class PhotosPickerViewModel: ObservableObject {
+class PhotosPickerViewModel: ObservableObject, ErrorPresentable {
     @Published var isUploading: Bool = false
     @Published var isDownloading: Bool = false
     @Published var showPhotosPicker: Bool = false
@@ -48,6 +48,10 @@ class PhotosPickerViewModel: ObservableObject {
     }
     
     @Published var photoAttachments: [PhotoAttachment] = []
+    
+    // Error Handling
+    @Published var showError: Bool = false
+    @Published var errorMessage: String?
     
     func uploadPhoto(to storage: PhotoStorage) async -> [String] {
         await MainActor.run {
@@ -101,14 +105,21 @@ class PhotosPickerViewModel: ObservableObject {
         let downloadedAttachments = photoAttachments.filter(\.isDownloaded)
         let newAttachments = selections.map { PhotoAttachment(photoPickerItem: $0) }
         
-        if (downloadedAttachments.count + newAttachments.count) > 3 {
-            print("사진 최대 선택개수는 3개입니다.")
+        guard (downloadedAttachments.count + newAttachments.count) < 4 else {
+            presentError(message: "사진 최대 선택개수는 3개입니다.")
             return
         }
         
         withAnimation {
             photoAttachments = downloadedAttachments + newAttachments
             print(photoAttachments.map { $0.photoPickerItem?.itemIdentifier })
+        }
+    }
+    
+    func presentError(message: String?) {
+        DispatchQueue.main.async {
+            self.errorMessage = message
+            self.showError = true
         }
     }
 }
