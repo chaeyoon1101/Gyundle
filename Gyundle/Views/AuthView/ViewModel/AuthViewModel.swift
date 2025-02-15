@@ -32,7 +32,7 @@ class AuthViewModel: ObservableObject {
     
     // MARK: 유저 Auth 상태 확인
     private func setupAuthStateListener() {
-        authStateListenerHandle = Auth.auth().addStateDidChangeListener() { [weak self] auth, user in
+        authStateListenerHandle = Auth.auth().addStateDidChangeListener() { [weak self] _, user in
             guard let self else { return }
             
             if let user {
@@ -46,7 +46,7 @@ class AuthViewModel: ObservableObject {
                     } catch {
                         print("User Data가 존재하지 않음:", error.localizedDescription)
                         await MainActor.run {
-                            self.status = .loggedOut
+                            self.status = .signUp
                         }
                     }
                 }

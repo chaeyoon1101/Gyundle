@@ -152,24 +152,13 @@ class FirebaseManager {
     
     
     // MARK: User Data
-    func uploadUserInfo(user: User) async throws {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("로그인 된 유저 정보가 없음")
-            throw AuthError.userNotFound
-        }
-        
-        let userRef = db.collection("users").document(userID)
+    func uploadUserData(_ user: User) async throws {
+        let userRef = db.collection("users").document(user.id)
         try userRef.setData(from: user)
     }
     
-    
     func fetchUserData(id: String) async throws -> User {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("로그인 된 유저 정보가 없음")
-            throw AuthError.userNotFound
-        }
-        
-        let userRef = db.collection("users").document(userID)
+        let userRef = db.collection("users").document(id)
         
         let document = try await userRef.getDocument()
         let userData = try document.data(as: User.self)
@@ -189,9 +178,4 @@ class FirebaseManager {
         let downloadURL = try await photoRef.downloadURL()
         return downloadURL.absoluteString
     }
-}
-
-struct Test: Codable {
-    var id:  String
-    var value: String
 }

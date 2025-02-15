@@ -3,33 +3,32 @@ import SwiftUI
 struct MyPageView: View {
     @StateObject private var userManager = UserManager.shared
     @StateObject var photosPickerViewModel = PhotosPickerViewModel()
-    @ObservedObject var userData = UserInfoData()
     
     var body: some View {
         ZStack {
-            VStack {
-                if let user = userManager.user {
-                    VStack {
-                        Text(user.name)
-                        Text(user.email)
-//                        PhotoPickerView(
-//                            imageViewModel: imageViewModel,
-//                            uploadData: userData,
-//                            selectedImageURL: user.photo
-//                        )
-                    }
-                    .onAppear {
-                        updateUserData(user: user)
-                    }
-                    .onChange(of: user) { _, _ in
-                        updateUserData(user: user)
-                    }
-                } else {
-                    VStack {
-                        Text("11")
-                    }
-                }
-            }
+//            VStack {
+//                if let user = userManager.dogs {
+//                    VStack {
+//                        Text(user.name)
+//                        Text(user.email)
+////                        PhotoPickerView(
+////                            imageViewModel: imageViewModel,
+////                            uploadData: userData,
+////                            selectedImageURL: user.photo
+////                        )
+//                    }
+//                    .onAppear {
+//                        updateUserData(user: user)
+//                    }
+//                    .onChange(of: user) { _, _ in
+//                        updateUserData(user: user)
+//                    }
+//                } else {
+//                    VStack {
+//                        Text("11")
+//                    }
+//                }
+//            }
 //            if imageViewModel.isUploading {
 //                LoadingView()
 //            }
@@ -37,12 +36,12 @@ struct MyPageView: View {
 //        .disabled(imageViewModel.isUploading)
     }
     
-    private func updateUserData(user: User) {
-        userData.id = user.id
-        userData.email = user.email
-        userData.name = user.name
-        userData.photo = user.photo
-        userData.dateOfBirth = user.dateOfBirth
+    private func updateUserData(user: Dog) {
+//        userData.id = user.id
+//        userData.email = user.email
+//        userData.name = user.name
+//        userData.photo = user.photo
+//        userData.dateOfBirth = user.dateOfBirth
     }
         
 }

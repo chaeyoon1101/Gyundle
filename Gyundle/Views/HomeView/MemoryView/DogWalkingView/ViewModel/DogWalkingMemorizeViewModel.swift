@@ -54,7 +54,7 @@ final class DogWalkingMemorizeViewModel: ObservableObject {
     }
     
     private func calculateCalories() -> String {
-        let weight = UserManager.shared.user?.weight ?? 5
+        let weight = UserManager.shared.user?.dogs[0].weight ?? 5.0
         let dogWalkingTime = Double(timeSeconds) / 3600
         let dogWalkingMets = 3.0
 

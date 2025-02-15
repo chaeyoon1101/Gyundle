@@ -8,7 +8,7 @@ struct SignUpViewButtonStyle: ButtonStyle {
             .padding()
             .opacity(configuration.isPressed ? 0.8 : 1)
             .background(ColorConstant.accent)
-            .foregroundColor(.black)
+            .foregroundColor(ColorConstant.bgPrimary)
             .cornerRadius(20.0)
     }
 }

@@ -1,9 +1,15 @@
 import SwiftUI
 
+enum SignUpViewPage {
+    case nameView
+    case birthdayView
+    case profileView
+}
+
 struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
-    @StateObject private var signUpViewModel: SignUpViewModel = SignUpViewModel()
+    @StateObject private var signUpViewModel = SignUpViewModel()
     
     var body: some View {
         GeometryReader { let size = $0.size
@@ -26,11 +32,11 @@ struct SignUpView: View {
                             .id(SignUpViewPage.profileView)
                             .frame(width: size.width, height: size.height)
                     }
-                    .bold()
+                    .fontWeight(.bold)
                     .environmentObject(signUpViewModel)
                 }
                 .scrollDisabled(true)
-                .onChange(of: signUpViewModel.page) { _, newValue in
+                .onChange(of: signUpViewModel.viewPage) { _, newValue in
                     hideKeyboard()
                     
                     withAnimation {
@@ -45,5 +51,6 @@ struct SignUpView: View {
 }
 
 #Preview {
-    ContentView()
+    SignUpView()
+        .environmentObject(AuthViewModel())
 }

@@ -1,46 +1,52 @@
 import SwiftUI
 
 struct SignUpNameView: View {
-    @EnvironmentObject var signUpViewModel: SignUpViewModel
-    
+    @EnvironmentObject private var signUpViewModel: SignUpViewModel
     @State var isVaildName: Bool = false
     
     var body: some View {
-        GeometryReader { let size = $0.size
+        VStack {
+            DogNameTextField()
+                .padding(.top, 150)
             
-            VStack {
-                
-                VStack {
-                    Text("강아지의 이름을 알려주세요!")
-                    
-                    TextField("이름", text: $signUpViewModel.signUpData.name)
-                        .multilineTextAlignment(.center)
-                        .font(.title)
-                        .background(Color.clear)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .onChange(of: signUpViewModel.signUpData.name) { _, newValue in
-                            checkNameValidity(newValue)
-                        }
+            Spacer()
+            
+            NextButton()
+        }
+    }
+    
+    @ViewBuilder
+    private func DogNameTextField() -> some View {
+        VStack {
+            Text("강아지의 이름을 알려주세요!")
+            
+            TextField("이름", text: $signUpViewModel.dog.name)
+                .multilineTextAlignment(.center)
+                .font(.title)
+                .background(Color.clear)
+                .textFieldStyle(PlainTextFieldStyle())
+                .onChange(of: signUpViewModel.dog.name) { _, newValue in
+                    checkNameValidity(newValue)
                 }
-                .position(x: size.width / 2, y: size.height / 4)
-                
-                Spacer()
-                
-                VStack {
-                    if !isVaildName && !signUpViewModel.signUpData.name.isEmpty {
-                        Text("1글자 ~ 12글자 사이로 입력해주세요")
-                            .foregroundStyle(.red)
-                    }
-                    Button("다음") {
-                        signUpViewModel.page = .birthdayView
-                    }
-                    .disabled(!isVaildName)
-                    .opacity(!isVaildName ? 0.5 : 1)
-                    .frame(maxWidth: .infinity)
-                    .padding(20)
-                    .buttonStyle(SignUpViewButtonStyle())
-                }
+        }
+    }
+    
+    @ViewBuilder
+    private func NextButton() -> some View {
+        VStack {
+            if !isVaildName && !signUpViewModel.dog.name.isEmpty {
+                Text("1글자 ~ 12글자 사이로 입력해주세요")
+                    .foregroundStyle(.red)
             }
+            
+            Button("다음") {
+                signUpViewModel.viewPage = .birthdayView
+            }
+            .disabled(!isVaildName)
+            .opacity(!isVaildName ? 0.5 : 1)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .buttonStyle(SignUpViewButtonStyle())
         }
     }
     
