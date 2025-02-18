@@ -18,7 +18,7 @@ struct SignUpBackButton: View {
             .foregroundStyle(ColorConstant.fgPrimary)
             .background {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(ColorConstant.bgSecondary)
+                    .fill(ColorConstant.bgContent)
             }
             .onTapGesture(perform: action)
     }

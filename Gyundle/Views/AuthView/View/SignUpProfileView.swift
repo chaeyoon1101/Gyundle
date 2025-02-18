@@ -19,7 +19,6 @@ struct SignUpProfileView: View {
                 ProfileImagePicker()
                 
                 GenderPicker()
-                    .padding(.top, 45)
                 
                 WeightPicker(weight: $signUpViewModel.dog.weight)
             }
@@ -98,14 +97,15 @@ struct SignUpProfileView: View {
     
     @ViewBuilder
     private func GenderPicker() -> some View {
-        HStack(spacing: 45) {
+        HStack(spacing: 15) {
             Text("♀")
-                .font(.title)
+                .font(.system(size: 24))
                 .foregroundStyle(signUpViewModel.dog.gender == .female ? .pink : .gray)
-                .frame(width: 80, height: 80)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
                 .background(
-                    Circle()
-                        .fill(signUpViewModel.dog.gender == .female ? .pink.opacity(0.12) : ColorConstant.bgContent)
+                    Capsule()
+                        .fill(signUpViewModel.dog.gender == .female ? .pink.opacity(0.08) : ColorConstant.bgContent)
                         .stroke(signUpViewModel.dog.gender == .female ? .pink : .gray, lineWidth: 3)
                 )
                 .onTapGesture {
@@ -113,11 +113,12 @@ struct SignUpProfileView: View {
                 }
             
             Text("♂")
-                .font(.title)
+                .font(.system(size: 24))
                 .foregroundStyle(signUpViewModel.dog.gender == .male ? .blue : .gray)
-                .frame(width: 80, height: 80)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
                 .background(
-                    Circle()
+                    Capsule()
                         .fill(signUpViewModel.dog.gender == .male ? .blue.opacity(0.12) : ColorConstant.bgContent)
                         .stroke(signUpViewModel.dog.gender == .male ? .blue : .gray, lineWidth: 3)
                 )
@@ -125,6 +126,7 @@ struct SignUpProfileView: View {
                     signUpViewModel.dog.gender = .male
                 }
         }
+        .padding(.horizontal)
     }
 }
 

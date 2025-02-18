@@ -21,7 +21,7 @@ struct WeightPicker: View {
             
             Spacer()
             
-            Text("\(String(format: "%.1f", weight))")
+            Text("\(String(format: "%.1f", weight)) kg")
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 30)
