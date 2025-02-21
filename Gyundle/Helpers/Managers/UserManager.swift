@@ -2,15 +2,20 @@ import Foundation
 
 final class UserManager: ObservableObject {
     static let shared = UserManager()
-    private init() { }
     
     @Published var user: User?
+    @Published var selectedDog: Dog? {
+        didSet {
+            setSelectedDog(selectedDog?.id)
+        }
+    }
     
     func fetchUserData(id: String) async throws {
         let fetchedUserData = try await FirebaseManager.shared.fetchUserData(id: id)
         
         await MainActor.run {
             self.user = fetchedUserData
+            getSelectedDog()
         }
         print("fetch userData 성공")
     }
@@ -23,4 +28,18 @@ final class UserManager: ObservableObject {
             self.user = user
         }
     }
+    
+    private func getSelectedDog() {
+        let selectedDogID = UserDefaults.standard.string(forKey: "selectedDog")
+        
+        selectedDog = user?.dogs.first(where: { $0.id == selectedDogID }) ?? user?.dogs.first
+    }
+    
+    private func setSelectedDog(_ id: String?) {
+        if let id {
+            UserDefaults.standard.set(id, forKey: "selectedDog")
+        }
+    }
 }
+
+

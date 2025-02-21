@@ -11,6 +11,7 @@ protocol Memorable: Codable, Hashable, Equatable {
     var uid: String { get }
     var day: String { get }
     var date: Date { get }
+    var dogs: [Dog] { get }
     
     static func defaultMemory() -> Self
 }

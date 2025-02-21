@@ -10,6 +10,7 @@ struct DailyMemory: Memorable {
     var uid: String = UUID().uuidString
     var day: String
     var date: Date
+    var dogs: [Dog]
     var text: String
     var photosURL: [String]
  
@@ -17,6 +18,7 @@ struct DailyMemory: Memorable {
         return DailyMemory(
             day: .init(),
             date: .init(),
+            dogs: [],
             text: .init(),
             photosURL: .init()
         )
@@ -35,6 +37,7 @@ struct DogWalkingMemory: Memorable {
     var uid: String = UUID().uuidString
     var day: String
     var date: Date
+    var dogs: [Dog]
     var title: String
     var time: String
     var distance: String
@@ -47,6 +50,7 @@ struct DogWalkingMemory: Memorable {
         return DogWalkingMemory(
             day: "",
             date: Date(),
+            dogs: [],
             title: "",
             time: "",
             distance: "",

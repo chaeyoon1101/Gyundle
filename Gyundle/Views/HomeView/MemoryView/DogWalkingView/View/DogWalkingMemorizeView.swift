@@ -188,6 +188,7 @@ struct DogWalkingMemorizeView: View {
             uid: uid,
             day: day,
             date: date,
+            dogs: [],
             title: title,
             time: dogWalkingMemorizeViewModel.dogWalkingTime,
             distance: dogWalkingMemorizeViewModel.dogWalkingDistance,
