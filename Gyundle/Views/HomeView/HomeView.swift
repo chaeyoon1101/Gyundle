@@ -6,42 +6,37 @@ struct HomeView: View {
     @EnvironmentObject private var dogWalkingMemoryViewModel: DogWalkingMemoryViewModel
     
     // MARK: Present 상태 관리
-    @State private var showMemorizeView: Bool = false
-    @State private var showDailyMemoriesView: Bool = false
+    @Binding var showMemorizeView: Bool
     
     var body: some View {
-        ZStack {
+        VStack {
+            DogSelectorView()
             
             ScrollView(.vertical, showsIndicators: false) {
-                
                 VStack(spacing: 24) {
                     CalendarView()
                         .environmentObject(calendarViewModel)
                     
-                    let selectedDate = calendarViewModel.selectedDate
+                    DogWalkingMemoryView(date: calendarViewModel.selectedDate)
                     
-                    DogWalkingMemoryView(date: selectedDate)
-                    
-                    DailyMemoryView(date: selectedDate)
+                    DailyMemoryView(date: calendarViewModel.selectedDate)
                 }
+                .padding()
             }
-            .blur(radius: showMemorizeView ? 3 : 0)
-            .scrollClipDisabled()
-            
-            if showMemorizeView {
-                MemorizeView()
-                    .align(.bottom)
-                    .padding(.bottom, 120)
-            }
-            
-            MemorizeButton()
-                .align(.bottom)
-                .padding(.bottom, 24)
         }
-        .padding()
-        .safeAreaPadding(.top, getSafeAreaTop())
+            
+//            if showMemorizeView {
+//                MemorizeView()
+//                    .align(.bottom)
+//                    .padding(.bottom, 120)
+//            }
+//            
+//            MemorizeButton()
+//                .align(.bottom)
+//                .padding(.bottom, 24)s
+//        .safeAreaPadding(.top, getSafeAreaTop())
         .toolbar(.hidden, for: .navigationBar)
-        .fullScreenCover(isPresented: $showDailyMemoriesView) {
+        .fullScreenCover(isPresented: $dailyMemoryViewModel.showMemorizeView) {
             DailyMemorizeView(date: calendarViewModel.selectedDate)
         }
         .fullScreenCover(isPresented: $dogWalkingMemoryViewModel.showMemorizeView) {
@@ -49,7 +44,6 @@ struct HomeView: View {
         }
         .environmentObject(dailyMemoryViewModel)
         .environmentObject(dogWalkingMemoryViewModel)
-        .ignoresSafeArea()
     }
     
     @ViewBuilder
@@ -76,7 +70,7 @@ struct HomeView: View {
                 image: "dog.waiting",
                 text: "산책하기",
                 onTapped: {
-                    dogWalkingMemoryViewModel.showMemorizeView = true
+//                    showDogWalkingMemorizeView = true
                 }
             )
             
@@ -86,7 +80,7 @@ struct HomeView: View {
                 image: "dog.write.diary",
                 text: "일기쓰기",
                 onTapped: {
-                    showDailyMemoriesView = true
+//                    showDailyMemorizeView = true
                 }
             )
         }
@@ -123,7 +117,7 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(showMemorizeView: .constant(false))
         .environmentObject(DogWalkingMemoryViewModel())
         .environmentObject(DailyMemoryViewModel())
         .environmentObject(CalendarViewModel())

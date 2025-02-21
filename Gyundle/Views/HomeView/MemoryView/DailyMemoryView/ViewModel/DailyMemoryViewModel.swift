@@ -4,6 +4,8 @@ class DailyMemoryViewModel: ObservableObject, ErrorPresentable {
     // 캘린더에서 한 달 간격으로 보여주기 때문에 한 달씩 데이터를 구분
     @Published var dailyMemories: [MemoryKey: [DailyMemory]] = [:]
     
+    @Published var showMemorizeView: Bool = false
+    
     @Published var showError: Bool = false
     @Published var errorMessage: String?
     

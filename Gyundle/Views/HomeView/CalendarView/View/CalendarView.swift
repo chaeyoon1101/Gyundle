@@ -21,6 +21,6 @@ struct CalendarView: View {
     }
 }
 #Preview {
-    HomeView()
+    HomeView(showMemorizeView: .constant(false))
         .environmentObject(DailyMemoryViewModel())
 }

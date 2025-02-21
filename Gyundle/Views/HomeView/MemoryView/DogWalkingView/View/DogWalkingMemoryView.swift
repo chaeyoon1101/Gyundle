@@ -125,5 +125,5 @@ struct DogWalkingMemoryView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(showMemorizeView: .constant(false))
 }

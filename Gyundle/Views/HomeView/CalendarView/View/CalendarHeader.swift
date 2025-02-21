@@ -12,9 +12,11 @@ struct CalendarHeader: View {
                 Spacer()
                 
                 MonthNavigationView()
+                
+                AddMemoryButton()
             }
             .bold()
-              
+            
             HStack(spacing: 5) {
                 let weekdaySymbols = ["일", "월", "화", "수", "목", "금", "토"]
                 
@@ -54,9 +56,14 @@ struct CalendarHeader: View {
                 .foregroundStyle(.foreground)
         }
     }
+    
+    @ViewBuilder
+    private func AddMemoryButton() -> some View {
+        
+    }
 }
 
 #Preview {
-    HomeView()
+    HomeView(showMemorizeView: .constant(false))
         .environmentObject(DailyMemoryViewModel())
 }

@@ -107,6 +107,6 @@ extension CalendarGrid {
 }
 
 #Preview {
-    HomeView()
+    HomeView(showMemorizeView: .constant(false))
         .environmentObject(DailyMemoryViewModel())
 }

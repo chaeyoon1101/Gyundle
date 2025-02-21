@@ -15,7 +15,6 @@ class DogWalkingMemoryViewModel: ObservableObject, ErrorPresentable {
     
     // View Present Properties
     @Published var showMemorizeView: Bool = false
-    @Published var showDetailView: Bool = false
     
     // Error Handling
     @Published var showError: Bool = false
